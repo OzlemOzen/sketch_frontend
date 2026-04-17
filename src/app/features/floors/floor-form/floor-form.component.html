@@ -1,0 +1,24 @@
+<form #floorFormRef="ngForm" class="form">
+    <div class="form-group">
+        <label for="floor_number">Kat Numarası</label>
+        <input 
+        id="floor_number"
+        type="number"
+        name="floor_number"
+        required
+        [(ngModel)] = "formData.floor_number"
+        #floor_number = "ngModel"
+        (keydown.enter)="focusNext($event)"
+        />
+        <div *ngIf = "floor_number.invalid && floor_number.touched" class="alert">
+            <div *ngIf="floor_number.hasError('required')">
+                Kat numarasını giriniz!
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="save-button" (click)="onSubmit()">{{submitLabel}}</button>
+        <button type="button" class="cancel-button" (click)="cancel.emit()">İptal</button>
+    </div>
+</form>

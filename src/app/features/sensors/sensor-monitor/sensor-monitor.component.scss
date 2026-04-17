@@ -1,0 +1,486 @@
+// .sensor-monitor-page {
+//   padding: 24px;
+//   background: #f8fafc;
+//   min-height: 100vh;
+// }
+
+// .sensor-monitor-header {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: center;
+//   margin-bottom: 24px;
+
+//   h1 {
+//     margin: 0;
+//     font-size: 28px;
+//     font-weight: 700;
+//     color: #0f172a;
+//   }
+// }
+
+// .back-button {
+//   padding: 10px 16px;
+//   border-radius: 10px;
+//   background: #1d4ed8;
+//   color: #fff;
+//   text-decoration: none;
+//   font-weight: 600;
+// }
+
+// .building-groups {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 24px;
+// }
+
+// .building-section {
+//   background: #fff;
+//   border: 1px solid #dbe3ea;
+//   border-radius: 18px;
+//   padding: 18px;
+//   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+// }
+
+// .building-header {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: flex-start;
+//   gap: 16px;
+//   margin-bottom: 16px;
+
+//   h2 {
+//     margin: 0;
+//     font-size: 22px;
+//     color: #111827;
+//   }
+// }
+
+// .building-summary {
+//   display: flex;
+//   flex-wrap: wrap;
+//   gap: 10px;
+// }
+
+// .summary {
+//   padding: 6px 12px;
+//   border-radius: 999px;
+//   font-size: 13px;
+//   font-weight: 600;
+// }
+
+// .summary.warning {
+//   background: #fff7d6;
+//   color: #b26a00;
+// }
+
+// .summary.critical {
+//   background: #fee2e2;
+//   color: #c62828;
+// }
+
+// .summary.total {
+//   background: #e5eefc;
+//   color: #1d4ed8;
+// }
+
+// .sensor-list {
+//   display: flex;
+//   flex-direction: column;
+//   gap: 12px;
+// }
+
+// .sensor-alert-card {
+//   background: #fffafa;
+//   border: 1px solid #f1d7d7;
+//   border-radius: 14px;
+//   padding: 14px 16px;
+// }
+
+// .sensor-alert-card-top {
+//   display: flex;
+//   justify-content: space-between;
+//   align-items: flex-start;
+//   gap: 12px;
+//   margin-bottom: 8px;
+
+//   strong {
+//     font-size: 15px;
+//     color: #111827;
+//     word-break: break-word;
+//   }
+// }
+
+// .sensor-alert-status {
+//   padding: 4px 10px;
+//   border-radius: 999px;
+//   font-size: 12px;
+//   font-weight: 700;
+//   flex-shrink: 0;
+// }
+
+// .sensor-alert-status.warning {
+//   background: #fff7d6;
+//   color: #b26a00;
+// }
+
+// .sensor-alert-status.critical {
+//   background: #fee2e2;
+//   color: #c62828;
+// }
+
+// .sensor-alert-status.offline {
+//   background: #eef2f7;
+//   color: #667085;
+// }
+
+// .sensor-alert-meta {
+//   display: flex;
+//   flex-wrap: wrap;
+//   gap: 12px;
+//   font-size: 13px;
+//   color: #667085;
+//   margin-bottom: 8px;
+// }
+
+// .sensor-alert-message {
+//   font-size: 14px;
+//   color: #b42318;
+//   margin-bottom: 8px;
+// }
+
+// .sensor-alert-time {
+//   text-align: right;
+//   font-size: 12px;
+//   color: #667085;
+// }
+
+// .sensor-alert-empty {
+//   padding: 18px;
+//   border: 1px dashed #cbd5e1;
+//   border-radius: 12px;
+//   background: #f8fafc;
+//   color: #64748b;
+//   text-align: center;
+// }
+
+.sensor-monitor-page {
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.sensor-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+}
+
+.back-button {
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: #1d4ed8;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.building-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.building-section {
+  background: #fff;
+  border: 1px solid #dbe3ea;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+}
+
+.building-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  h2 {
+    margin: 0;
+    font-size: 22px;
+    color: #111827;
+  }
+}
+
+.building-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.summary {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.summary.warning {
+  background: #fff7d6;
+  color: #b26a00;
+}
+
+.summary.critical {
+  background: #fee2e2;
+  color: #c62828;
+}
+
+.summary.total {
+  background: #e5eefc;
+  color: #1d4ed8;
+}
+
+.sensor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+// .sensor-alert-card {
+//   background: #fffafa;
+//   border: 1px solid #f1d7d7;
+//   border-radius: 14px;
+//   padding: 14px 16px;
+// }
+
+.sensor-alert-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+
+  strong {
+    font-size: 15px;
+    color: #111827;
+    word-break: break-word;
+  }
+}
+
+.sensor-alert-status {
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sensor-alert-status.warning {
+  background: #fff7d6;
+  color: #b26a00;
+}
+
+.sensor-alert-status.critical {
+  background: #fee2e2;
+  color: #c62828;
+}
+
+.sensor-alert-status.offline {
+  background: #eef2f7;
+  color: #667085;
+}
+
+.sensor-alert-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  color: #667085;
+  margin-bottom: 8px;
+}
+
+.sensor-alert-message {
+  font-size: 14px;
+  color: #b42318;
+  margin-bottom: 8px;
+}
+
+.sensor-alert-time {
+  text-align: right;
+  font-size: 12px;
+  color: #667085;
+}
+
+.sensor-alert-empty {
+  padding: 18px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  text-align: center;
+}
+
+.sensor-alert-card {
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+.sensor-alert-card.warning {
+  background-color: #fff8e1;
+  border-color: #f4d27a;
+}
+
+.sensor-alert-card.critical {
+  background-color: #fdeaea;
+  border-color: #efb7b7;
+}
+
+.sensor-alert-card.offline {
+  background-color: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+
+
+/////////////////////
+/* Genel güvenli responsive ayarlar */
+* {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.sensor-monitor-page {
+  width: 100%;
+  padding: 16px;
+}
+
+.sensor-monitor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Bina kartları */
+.building-section {
+  width: 100%;
+}
+
+.building-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.building-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Sensör listesi */
+.sensor-list {
+  width: 100%;
+}
+
+.sensor-alert-card {
+  width: 100%;
+}
+
+.sensor-alert-card-top,
+.sensor-alert-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.sensor-alert-time {
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .sensor-monitor-page {
+    padding: 14px;
+  }
+}
+
+/* Küçük tablet */
+@media (max-width: 768px) {
+  .sensor-monitor-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .building-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .building-summary {
+    width: 100%;
+  }
+
+  .sensor-alert-card {
+    padding: 12px;
+  }
+
+  .sensor-alert-card-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .sensor-alert-time {
+    text-align: left;
+  }
+}
+
+/* Telefon */
+@media (max-width: 480px) {
+  .sensor-monitor-page {
+    padding: 10px;
+  }
+
+  .back-button {
+    width: 100%;
+  }
+
+  .summary {
+    font-size: 12px;
+  }
+
+  .sensor-alert-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}

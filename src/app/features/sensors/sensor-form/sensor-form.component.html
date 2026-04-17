@@ -1,0 +1,287 @@
+<form #sensorFormRef="ngForm" class="form">
+  <div class="form-group">
+    <label for="sensorTitle">Sensör Adı</label>
+    <input
+      id="sensorTitle"
+      type="text"
+      name="title"
+      required
+      pattern="^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]+$"
+      minlength="3"
+      [(ngModel)]="formData.title"
+      #title="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="title.invalid && title.touched" class="alert">
+        <div *ngIf="title.hasError('required')">
+            Sensör adı bilgisi zorunludur!
+        </div>
+        <div *ngIf="title.hasError('pattern')">
+            Sensör adı sadece harflerden oluşmalıdır!
+        </div>
+        <div *ngIf="title.hasError('minlength')">
+            Sensör adı en az 3 karakterden oluşmalıdır!
+        </div>
+    </div>
+</div>
+
+  <div class="form-group">
+    <label for="sensorType">Sensör Tipi</label>
+    <input
+      id="sensorType"
+      type="text"
+      name="type"
+      required
+      minlength="3"
+      [(ngModel)]="formData.type"
+      #type="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="type.invalid && type.touched" class="alert">
+      <div *ngIf="type.hasError('required')">
+        Sensör tip bilgisi zorunludur!
+      </div>
+      <div *ngIf="type.hasError('minlength')">
+        Sensör tipi en az 3 karakterden oluşmalıdır!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="sensorRoom">Oda Seç</label>
+    <select
+      id="sensorRoom"
+      name="sensorRoom"
+      class="room-select"
+      required
+      [(ngModel)]="formData.sensorRoom"
+      #sensorRoom="ngModel"
+      (keydown.enter)="focusNext($event)"
+    >
+      <option [ngValue]="null" disabled>Oda seçiniz</option>
+      <option *ngFor="let room of rooms" [ngValue]="room.id">
+        {{ room.title }}
+      </option>
+    </select>
+
+    <div *ngIf="sensorRoom.invalid && sensorRoom.touched" class="alert">
+      Henüz bir oda seçmediniz!
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="sensorX">x (sol-üst)</label>
+    <input
+      id="sensorX"
+      type="number"
+      name="x"
+      required
+      [(ngModel)]="formData.x"
+      #x="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="x.invalid && x.touched" class="alert">
+      <div *ngIf="x.hasError('required')">
+        x koordinat bilgisi zorunludur!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="sensorY">y (sol-üst)</label>
+    <input
+      id="sensorY"
+      type="number"
+      name="y"
+      required
+      [(ngModel)]="formData.y"
+      #y="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="y.invalid && y.touched" class="alert">
+      <div *ngIf="y.hasError('required')">
+        y koordinat bilgisi zorunludur!
+      </div>
+    </div>
+  </div>
+<!-- 
+  <div class="form-group">
+    <label for="sensorOptimumValue">Optimum değer:</label>
+    <input
+      id="sensorOptimumValue"
+      type="number"
+      name="optimum_value"
+      required
+      [(ngModel)]="formData.optimum_value"
+      #optimum_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="optimum_value.invalid && optimum_value.touched" class="alert">
+      <div *ngIf="optimum_value.hasError('required')">
+        Optimum sensör değeri bilgisi zorunludur!
+      </div>
+    </div>
+  </div>
+
+    <div class="form-group">
+    <label for="sensorMinValue">Minimum değer:</label>
+    <input
+      id="sensorMinValue"
+      type="number"
+      name="min_value"
+      required
+      [(ngModel)]="formData.min_value"
+      #min_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="min_value.invalid && min_value.touched" class="alert">
+      <div *ngIf="min_value.hasError('required')">
+        Minimum sensör değeri bilgisi zorunludur!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="sensorMaxValue">Maksimum değer:</label>
+    <input
+      id="sensorMaxValue"
+      type="number"
+      name="max_value"
+      required
+      [(ngModel)]="formData.max_value"
+      #max_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="max_value.invalid && max_value.touched" class="alert">
+      <div *ngIf="max_value.hasError('required')">
+        Maximum sensör değeri bilgisi zorunludur!
+      </div>
+    </div>
+  </div> -->
+<!-- 
+  <div class="metric-group">
+  <h3>Sıcaklık Eşikleri</h3>
+
+  <div class="form-group">
+    <label for="sensorSicaklikOptimum">Sıcaklık optimum değer:</label>
+    <input
+      id="sensorSicaklikOptimum"
+      type="number"
+      name="sicaklik_optimum"
+      [required]="!isCameraSensor()"
+      [(ngModel)]="formData.temperature_optimum_value"
+      #temperature_optimum_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="!isCameraSensor() && temperature_optimum_value.invalid && temperature_optimum_value.touched" class="alert">
+      <div *ngIf="temperature_optimum_value.hasError('required')">
+        Sıcaklık optimum değeri zorunludur!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="sensorSicaklikMin">Sıcaklık minimum değer:</label>
+    <input
+      id="sensorSicaklikMin"
+      type="number"
+      name="sicaklik_min"
+      [required]="!isCameraSensor()"
+      [(ngModel)]="formData.temperature_min_value"
+      #temperature_min_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="!isCameraSensor() && temperature_min_value.invalid && temperature_min_value.touched" class="alert">
+      <div *ngIf="temperature_min_value.hasError('required')">
+        Sıcaklık minimum değeri zorunludur!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="sensorSicaklikMax">Sıcaklık maksimum değer:</label>
+    <input
+      id="sensorSicaklikMax"
+      type="number"
+      name="sicaklik_max"
+      [required]="!isCameraSensor()"
+      [(ngModel)]="formData.temperature_max_value"
+      #temperature_max_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="!isCameraSensor() && temperature_max_value.invalid && temperature_max_value.touched" class="alert">
+      <div *ngIf="temperature_max_value.hasError('required')">
+        Sıcaklık maksimum değeri zorunludur!
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="metric-group">
+  <h3>Nem Eşikleri</h3>
+
+  <div class="form-group">
+    <label for="sensorNemOptimum">Nem optimum değer:</label>
+    <input
+      id="sensorNemOptimum"
+      type="number"
+      name="nem_optimum"
+      [required]="!isCameraSensor()"
+      [(ngModel)]="formData.humidity_optimum_value"
+      #humidity_optimum_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="!isCameraSensor() && humidity_optimum_value.invalid && humidity_optimum_value.touched" class="alert">
+      <div *ngIf="humidity_optimum_value.hasError('required')">
+        Nem optimum değeri zorunludur!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="sensorNemMin">Nem minimum değer:</label>
+    <input
+      id="sensorNemMin"
+      type="number"
+      name="nem_min"
+      [required]="!isCameraSensor()"
+      [(ngModel)]="formData.humidity_min_value"
+      #humidity_min_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="!isCameraSensor() && humidity_min_value.invalid && humidity_min_value.touched" class="alert">
+      <div *ngIf="humidity_min_value.hasError('required')">
+        Nem minimum değeri zorunludur!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="sensorNemMax">Nem maksimum değer:</label>
+    <input
+      id="sensorNemMax"
+      type="number"
+      name="humidity_max_value"
+      [required]="!isCameraSensor()"
+      [(ngModel)]="formData.humidity_max_value"
+      #humidity_max_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="!isCameraSensor() && humidity_max_value.invalid && humidity_max_value.touched" class="alert">
+      <div *ngIf="humidity_max_value.hasError('required')">
+        Nem maksimum değeri zorunludur!
+      </div>
+    </div>
+  </div>
+</div> -->
+
+  <div class="form-actions">
+    <button type="button" class="save-button" (click)="onSubmit()">
+      {{ submitLabel }}
+    </button>
+    <button type="button" class="cancel-button" (click)="cancel.emit()">
+      İptal
+    </button>
+  </div>
+</form>
+

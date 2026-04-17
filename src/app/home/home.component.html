@@ -1,0 +1,575 @@
+<div class="page-shell">
+<header class="navbar">
+  <div class="navbar-title">ŞİRKET KROKİLERİ</div>
+
+  <nav class="nav-links" aria-label="Ana işlemler">
+    <button type="button" class="nav-action" (click)="addBuilding()">Bina Ekle</button>
+    <button type="button" class="nav-action" (click)="updateBuilding()">Bina Güncelle</button>
+    <button type="button" class="nav-action" (click)="deleteBuilding()">Bina Sil</button>
+    <button type="button" class="nav-action" (click)="addFloor()">Kat Ekle</button>
+    <button type="button" class="nav-action" (click)="addRoom()">Oda Ekle</button>
+    <button type="button" class="nav-action" (click)="updateRoom()">Oda Güncelle</button>
+    <button type="button" class="nav-action" (click)="deleteRoom()">Oda Sil</button>
+    <button type="button" class="nav-action" (click)="addSensor()">Sensör Ekle</button>
+    <button type="button" class="nav-action" (click)="updateSensor()">Sensör Güncelle</button>
+    <button type="button" class="nav-action" (click)="deleteSensor()">Sensör Sil</button>
+    <!-- <button type="button" class="nav-action" routerLink="/sensor-monitor">Sensör Verilerini Görüntüle</button> -->
+    <!-- <button type="button" class="nav-action" (click)="openSensorMonitorPage()">Sensör Verilerini Görüntüle</button> -->
+    <!-- <button type="button" class="nav-action" routerLink="/sensor-monitor">Sensör Verilerini Görüntüle</button> -->
+    <a class="nav-action" routerLink="/sensor-monitor" target="_blank" rel="noopener noreferrer">Sensör Verilerini Görüntüle</a>
+  </nav>
+</header>
+
+<div class="top-bar">
+  <div class="selection-bar">
+    <div class="selector-group">
+      <label for="buildingSelect" class="selector-label">Bina Seç</label>
+      <select
+        id="buildingSelect"
+        class="selector-input"
+        [value]="currentBuildingId ?? ''"
+        (change)="onBuildingChange(+$any($event.target).value)"
+      >
+        <option value="" disabled selected>Bina seçiniz</option>
+        <option *ngFor="let building of buildings" [value]="building.id">
+          {{ building.title }} - {{ building.city }} / {{ building.county }}
+        </option>
+      </select>
+    </div>
+<!-- <select
+        id="floorSelect"
+        class="selector-input"
+        [value]="selectedFloorNumber ?? ''"
+        [disabled]="currentBuildingId === null || floors.length === 0"
+        (change)="onFloorChange(+$any($event.target).value)"
+      >
+        <option value="" disabled selected>
+          {{ currentBuildingId === null ? 'Önce bina seçiniz' : 'Kat seçiniz' }}
+        </option>
+        <option *ngFor="let floor of floors" [value]="floor.floor_number">
+          Kat {{ floor.floor_number }}
+        </option>
+      </select> -->
+
+
+    <!-- <div class="selector-group">
+      <label for="floorSelect" class="selector-label">Kat Seç</label>
+      
+       <select
+  id="floorSelect"
+  class="selector-input"
+  [(ngModel)]="selectedFloorNumber"
+  [disabled]="currentBuildingId === null || floors.length === 0"
+  (ngModelChange)="onFloorChange($event)"
+>
+  <option [ngValue]="null" disabled>
+    {{ currentBuildingId === null ? 'Önce bina seçiniz' : 'Kat seçiniz' }}
+  </option>
+  <option *ngFor="let floor of floors" [ngValue]="floor.floor_number">
+    Kat {{ floor.floor_number }}
+  </option>
+</select>
+    </div>
+  </div> -->
+
+  <div class="selector-group">
+  <label for="floorSelect" class="selector-label">Kat Seç</label>
+  <select
+    id="floorSelect"
+    class="selector-input"
+    [(ngModel)]="selectedFloorNumber"
+    [disabled]="currentBuildingId === null || floors.length === 0"
+    (ngModelChange)="onFloorChange($event)"
+  >
+    <option [ngValue]="null">
+      {{ currentBuildingId === null ? 'Önce bina seçiniz' : 'Kat seçiniz' }}
+    </option>
+    <option *ngFor="let floor of floors" [ngValue]="floor.floor_number">
+      Kat {{ floor.floor_number }}
+    </option>
+  </select>
+</div>
+
+  <aside class="sensor-alert-panel">
+    <div class="sensor-alert-header">
+      <h3>Hatalı Sensör Akışı</h3>
+      <div class="sensor-summary-bar">
+        <span class="summary-pill warning">
+          Uyarı: {{ warningSensorCount }}
+        </span>
+        <span class="summary-pill critical">
+          Kritik: {{ criticalSensorCount }}
+        </span>
+        <!-- <span class="summary-pill total">
+          Toplam Problemli Sensör: {{ totalProblemSensorCount }}
+        </span> -->
+        <span class="summary-pill alert-count" *ngIf="faultySensors.length > 0">
+        Bu kattaki sensör sayısı: {{ faultySensors.length }}
+      </span>
+      </div>
+    </div>
+
+    <div class="sensor-alert-list" *ngIf="faultySensors.length > 0; else noFaultySensors">
+      <!-- <div
+        class="sensor-alert-card"
+        *ngFor="let item of faultySensors; trackBy: trackByFaultySensor"
+      > -->
+      <div
+      class="sensor-alert-card"
+      [ngClass]="item.status"
+      *ngFor="let item of faultySensors; trackBy: trackByFaultySensor"
+      >
+        <div class="sensor-alert-card-top">
+          <strong>{{ item.title }}</strong>
+          <span class="sensor-alert-status" [class]="item.status">
+            {{ item.statusText }}
+          </span>
+        </div>
+
+        <div class="sensor-alert-meta">
+          <span>Oda: {{ item.roomTitle }}</span>
+          <span>Tip: {{ item.type }}</span>
+          <span *ngIf="item.sicaklik !== undefined">Sıcaklık: {{ item.sicaklik }}</span>
+          <span *ngIf="item.nem !== undefined">Nem: {{ item.nem }}</span>
+        </div>
+
+        <div class="sensor-alert-message">
+          {{ item.message }}
+        </div>
+
+        <div class="sensor-alert-time">
+          {{ item.updatedAt }}
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noFaultySensors>
+      <div class="sensor-alert-empty">
+        Şu anda hatalı sensör bulunmuyor.
+      </div>
+    </ng-template>
+  </aside>
+</div>
+
+<section
+  #container
+  class="container"
+  (mousedown)="onMouseDown($event)"
+  (mousemove)="onMouseMove($event)"
+  (mouseup)="onMouseUp()"
+  (mouseleave)="onMouseUp()"
+  (wheel)="onWheel($event)"
+>
+  <div
+    class="sketch"
+    [style.background-size]="gridSize + 'px ' + gridSize + 'px'"
+    [style.background-position]="posX + 'px ' + posY + 'px'"
+  >
+    <div
+      class="content"
+      [style.transform]="'translate(' + posX + 'px,' + posY + 'px) scale(' + scale + ')'"
+    >
+      <div
+      *ngFor="let room of topLevelRooms; trackBy: trackByRoom"
+        class="room"
+        [ngClass]="{
+  'room-normal': room.statusColor === 'normal',
+  'room-warning': room.statusColor === 'warning',
+  'room-critical': room.statusColor === 'critical',
+  'room-unknown': room.statusColor === 'unknown'
+}"
+        [style.left.px]="(room.x ?? 0)"
+        [style.top.px]="-(room.y ?? 0)"
+        [style.width.px]="(room.width ?? 0)"
+        [style.height.px]="(room.height ?? 0)"
+      >
+        <span
+        class="room-title"
+        [style.left.px]="room.titleLeft ?? 8"
+        [style.top.px]="room.titleTop ?? 8">
+        {{ room.title }}
+      </span>
+
+        <div
+          *ngFor="let restrictedRoom of room.restrictedAreas; trackBy: trackByRestrictedRoom"
+          class="restrictedRoom"
+          [style.left.px]="restrictedRoom.x - (room.x ?? 0)"
+          [style.top.px]="(room.y ?? 0) - restrictedRoom.y"
+          [style.width.px]="restrictedRoom.width"
+          [style.height.px]="restrictedRoom.height"
+        >
+          <span class="restricted-room-title">{{ restrictedRoom.title }}</span>
+        </div>
+      </div>
+
+      <!-- <div
+        *ngFor="let sensor of visibleSensors; trackBy: trackBySensor"
+        class="sensor"
+        [style.left.px]="sensor.x"
+        [style.top.px]="-sensor.y"
+      >
+        <span class="sensor-name">{{ sensor.title }}</span>
+        <span class="material-symbols-outlined">sensors</span>
+      </div> -->
+      <!-- <div
+  *ngFor="let sensor of visibleSensors; trackBy: trackBySensor"
+  class="sensor"
+  [ngClass]="{
+    'sensor-green': sensor.statusColor === 'green',
+    'sensor-yellow': sensor.statusColor === 'yellow',
+    'sensor-red': sensor.statusColor === 'red',
+    'sensor-unknown': sensor.statusColor === 'unknown'
+  }"
+  [style.left.px]="sensor.x"
+  [style.top.px]="-sensor.y"
+>
+  <span class="sensor-name">{{ sensor.title }}</span>
+  <span class="material-symbols-outlined">sensors</span>
+</div> -->
+<div
+  *ngFor="let sensor of visibleSensors; trackBy: trackBySensor"
+  class="sensor"
+  [ngClass]="{
+    'sensor-green': sensor.statusColor === 'green',
+    'sensor-yellow': sensor.statusColor === 'yellow',
+    'sensor-red': sensor.statusColor === 'red',
+    'sensor-unknown': sensor.statusColor === 'unknown'
+  }"
+  [style.left.px]="sensor.x"
+  [style.top.px]="-sensor.y"
+>
+  <span class="sensor-name">{{ sensor.title }}</span>
+  
+  <span class="material-symbols-outlined">{{ getSensorIcon(sensor) }}</span>
+</div>
+    </div>
+  </div>
+</section>
+
+<app-modal
+  [isOpen]="buildingModalOpen"
+  title="BİNA EKLE"
+  (close)="buildingModalOpen = false"
+>
+  <app-building-form
+    [formData]="buildingFormData"
+    submitLabel="Ekle"
+    (save)="onBuildingSave($event)"
+    (cancel)="buildingModalOpen = false"
+  ></app-building-form>
+</app-modal>
+
+<!-- <app-modal
+  [isOpen]="buildingDeleteModalOpen"
+  title="BİNA SİL"
+  (close)="buildingDeleteModalOpen = false"
+>
+  <div class="delete-building-content">
+    <label for="buildingSelectForDelete">Silinecek Oda</label>
+    <select
+      id="buildingSelectForDelete"
+      [ngModel]="selectedBuildingIdForDelete"
+      (ngModelChange)="selectedBuildingIdForDelete = $event"
+      name="buildingSelectForDelete"
+    >
+      <option [ngValue]="null">Oda seçiniz</option>
+      <option
+        *ngFor="let building of visibleBuildingDeleteOptions"
+        [ngValue]="building.id"
+      >
+        {{ building.title }}
+      </option>
+    </select>
+
+    <p>Seçilen binayı silmek istediğinize emin misiniz?</p>
+
+    <button type="button" (click)="onBuildingDelete()">Sil</button>
+    <button type="button" (click)="buildingDeleteModalOpen = false">İptal</button>
+  </div>
+</app-modal> -->
+<app-modal
+  [isOpen]="buildingUpdateModalOpen"
+  title="BİNA GÜNCELLE"
+  (close)="buildingUpdateModalOpen = false"
+>
+  <div class="popup-select-block">
+    <label for="buildingSelectForUpdate">Güncellenecek Bina</label>
+    <select
+      id="buildingSelectForUpdate"
+      class="popup-select"
+      [ngModel]="selectedBuildingIdForUpdate"
+      (ngModelChange)="onBuildingSelectedForUpdate($event)"
+      name="buildingSelectForUpdate"
+    >
+      <option [ngValue]="null">Bina seçiniz</option>
+      <option
+        *ngFor="let building of visibleBuildingUpdateOptions"
+        [ngValue]="building.id"
+      >
+        {{ building.title }}
+      </option>
+    </select>
+  </div>
+
+  <!-- <app-building-form
+    [formData]="buildingUpdateFormData"
+    submitLabel="Güncelle"
+    (save)="onBuildingUpdate($event)"
+    (cancel)="buildingUpdateModalOpen = false"
+  ></app-building-form> -->
+  <app-building-form
+  [formData]="buildingUpdateFormData"
+  submitLabel="Güncelle"
+  (save)="onBuildingUpdate($event)"
+  (cancel)="buildingUpdateModalOpen = false"
+></app-building-form>
+</app-modal>
+
+<app-modal
+  [isOpen]="buildingDeleteModalOpen"
+  title="BİNA SİL"
+  (close)="buildingDeleteModalOpen = false"
+>
+  <div class="popup-select-block">
+    <label for="buildingSelectForDelete">Silinecek Bina</label>
+    <select
+      id="buildingSelectForDelete"
+      class="popup-select"
+      [ngModel]="selectedBuildingIdForDelete"
+      (ngModelChange)="selectedBuildingIdForDelete = $event"
+      name="buildingSelectForDelete"
+    >
+      <option [ngValue]="null">Bina seçiniz</option>
+      <option
+        *ngFor="let building of visibleBuildingDeleteOptions"
+        [ngValue]="building.id"
+      >
+        {{ building.title }}
+      </option>
+    </select>
+
+    <p>Seçilen binayı silmek istediğinize emin misiniz?</p>
+
+    <div class="form-actions">
+      <button type="button" class="save-button" (click)="onBuildingDelete()">Sil</button>
+      <button type="button" class="cancel-button" (click)="buildingDeleteModalOpen = false">İptal</button>
+    </div>
+  </div>
+</app-modal>
+
+<app-modal
+  [isOpen]="floorModalOpen"
+  title="KAT EKLE"
+  (close)="floorModalOpen = false"
+>
+  <app-floor-form
+    [formData]="floorFormData"
+    submitLabel="Ekle"
+    (save)="onFloorSave($event)"
+    (cancel)="floorModalOpen = false"
+  ></app-floor-form>
+</app-modal>
+
+<app-modal
+  [isOpen]="roomModalOpen"
+  title="ODA EKLE"
+  (close)="roomModalOpen = false"
+>
+  <app-room-form
+    [formData]="roomFormData"
+    submitLabel="Ekle"
+    (save)="onRoomSave($event)"
+    (cancel)="roomModalOpen = false"
+  ></app-room-form>
+</app-modal>
+
+<app-modal
+  [isOpen]="roomUpdateModalOpen"
+  title="ODA GÜNCELLE"
+  (close)="roomUpdateModalOpen = false"
+>
+  <!-- <div class="update-room-select-wrapper">
+    <label for="roomSelectForUpdate">Güncellenecek Oda</label>
+    <select
+      id="roomSelectForUpdate"
+      class="popup-select"
+      [ngModel]="selectedRoomIdForUpdate"
+      (ngModelChange)="onRoomSelectedForUpdate($event)"
+      name="roomSelectForUpdate"
+    > -->
+    <div class="popup-select-block">
+  <label for="roomSelectForUpdate">Güncellenecek Oda</label>
+  <select
+    id="roomSelectForUpdate"
+    class="popup-select"
+    [ngModel]="selectedRoomIdForUpdate"
+    (ngModelChange)="onRoomSelectedForUpdate($event)"
+    name="roomSelectForUpdate"
+  >
+      <option [ngValue]="null">Oda seçiniz</option>
+      <option
+        *ngFor="let room of visibleRoomUpdateOptions"
+        [ngValue]="room.id"
+      >
+        {{ room.title }}
+      </option>
+    </select>
+  </div>
+
+<app-room-form
+  [formData]="roomUpdateFormData"
+  submitLabel="Güncelle"
+  (save)="onRoomUpdate($event)"
+  (cancel)="roomUpdateModalOpen = false"
+></app-room-form>
+</app-modal>
+
+<app-modal
+  [isOpen]="roomDeleteModalOpen"
+  title="ODA SİL"
+  (close)="roomDeleteModalOpen = false"
+>
+  <div class="popup-select-block">
+    <label for="roomSelectForDelete">Silinecek Oda</label>
+    <select
+      id="roomSelectForDelete"
+      class="popup-select"
+      [ngModel]="selectedRoomIdForDelete"
+      (ngModelChange)="selectedRoomIdForDelete = $event"
+      name="roomSelectForDelete"
+    >
+      <option [ngValue]="null">Oda seçiniz</option>
+      <option
+        *ngFor="let room of visibleRoomDeleteOptions"
+        [ngValue]="room.id"
+      >
+        {{ room.title }}
+      </option>
+    </select>
+
+    <p>Seçilen odayı silmek istediğinize emin misiniz?</p>
+
+    <div class="form-actions">
+      <button type="button" class="save-button" (click)="onRoomDelete()">Sil</button>
+      <button type="button" class="cancel-button" (click)="roomDeleteModalOpen = false">İptal</button>
+  </div>
+  </div>
+</app-modal>
+
+<app-modal
+  [isOpen]="sensorModalOpen"
+  title="SENSÖR EKLE"
+  (close)="sensorModalOpen = false"
+>
+<div class="modal-scroll-body">
+  <app-sensor-form
+    [formData]="sensorFormData"
+    [rooms]="rooms"
+    submitLabel="Ekle"
+    (save)="onSensorSave($event)"
+    (cancel)="sensorModalOpen = false"
+  ></app-sensor-form>
+</div>
+</app-modal>
+
+<app-modal
+  [isOpen]="sensorUpdateModalOpen"
+  title="SENSÖR GÜNCELLE"
+  (close)="sensorUpdateModalOpen = false"
+>
+  <!-- <div class="update-sensor-select-wrapper">
+    <label for="sensorSelectForUpdate">Güncellenecek Sensör</label>
+    <select
+      id="sensorSelectForUpdate"
+      class="popup-select"
+      [ngModel]="selectedSensorIdForUpdate"
+      (ngModelChange)="onSensorSelectedForUpdate($event)"
+      name="sensorSelectForUpdate"
+    > -->
+      <div class="modal-scroll-body">
+    <div class="popup-select-block">
+  <label for="sensorSelectForUpdate">Güncellenecek Sensör</label>
+  <select
+    id="sensorSelectForUpdate"
+    class="popup-select"
+    [ngModel]="selectedSensorIdForUpdate"
+    (ngModelChange)="onSensorSelectedForUpdate($event)"
+    name="sensorSelectForUpdate"
+  >
+      <option [ngValue]="null">Sensör seçiniz</option>
+      <option
+        *ngFor="let sensor of visibleSensorUpdateOptions"
+        [ngValue]="sensor.id"
+      >
+        {{ sensor.title }}
+      </option>
+    </select>
+  </div>
+  
+<app-sensor-form
+  [formData]="sensorUpdateFormData"
+  [rooms]="rooms"
+  submitLabel="Güncelle"
+  (save)="onSensorUpdate($event)"
+  (cancel)="sensorUpdateModalOpen = false"
+></app-sensor-form>
+</div>
+</app-modal>
+
+<app-modal
+  [isOpen]="sensorDeleteModalOpen"
+  title="SENSÖR SİL"
+  (close)="sensorDeleteModalOpen = false"
+>
+  <div class="popup-select-block">
+    <label for="sensorSelectForDelete">Silinecek Sensör</label>
+    <select
+      id="sensorSelectForDelete"
+      class="popup-select"
+      [ngModel]="selectedSensorIdForDelete"
+      (ngModelChange)="selectedSensorIdForDelete = $event"
+      name="sensorSelectForDelete"
+    >
+      <option [ngValue]="null">Sensör seçiniz</option>
+      <option
+        *ngFor="let sensor of visibleSensorDeleteOptions"
+        [ngValue]="sensor.id"
+      >
+        {{ sensor.title }}
+      </option>
+    </select>
+
+    <p>Seçilen sensörü silmek istiyor musunuz?</p>
+
+    <div class="form-actions">
+      <button type="button" class="save-button" (click)="onSensorDelete()">Sil</button>
+      <button type="button" class="cancel-button" (click)="sensorDeleteModalOpen = false">İptal</button>
+    </div>
+  </div>
+</app-modal>
+
+<app-modal
+  [isOpen]="alertModalOpen"
+  [title]="alertModalTitle"
+  (close)="closeAlert()"
+>
+  <div class="alert-popup-content">
+    <div class="alert-popup-icon">!</div>
+
+    <div class="alert-popup-text">
+      <p>{{ alertModalMessage }}</p>
+    </div>
+
+    <div class="form-actions alert-actions">
+      <button
+        type="button"
+        class="alert-ok-button"
+        (click)="closeAlert()"
+      >
+        Tamam
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+</div>

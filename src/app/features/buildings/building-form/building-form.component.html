@@ -1,0 +1,137 @@
+<form #buildingFormRef="ngForm" class="form">
+    <div class="form-group">
+        <label for="buildingTitle">Bina Adı</label>
+        <input
+    id="buildingTitle" 
+    type="text"
+    name="title"
+    required
+    pattern="^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]+$"
+    minlength="3"
+    [(ngModel)]="formData.title"
+    #title="ngModel"
+    (keydown.enter)="focusNext($event)"
+  />
+  <div *ngIf="title.invalid && title.touched" class="alert">
+    <div *ngIf="title.hasError('required')">
+      Bina adını giriniz!
+    </div>
+    <div *ngIf="title.hasError('pattern')">
+      Bina adı yalnızca harflerden oluşabilmektedir!
+    </div>
+    <div *ngIf="title.hasError('minlength')">
+      Bina adı en az 3 harfli olmalıdır!
+    </div>
+  </div>
+</div>
+
+    <div class="form-group">
+        <label for="buildingCity">Şehir</label>
+        <input 
+        id="buildingCity"
+        type="text"
+        name="city"
+        required
+        pattern="^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]+$"
+        minlength="3"
+        [(ngModel)] = "formData.city"
+        #city="ngModel"
+        (keydown.enter)="focusNext($event)"
+        />
+        <div *ngIf="city.invalid && city.touched" class="alert">
+            <div *ngIf="city.hasError('required')">
+                Şehir bilgisini giriniz.
+            </div>
+            <div *ngIf="city.hasError('pattern')">
+                Şehir bilgisi sadece harfleden oluşmalıdır!
+            </div>
+            <div *ngIf="city.hasError('minlength')">
+                Şehir bilgisi en az 3 harften oluşmalıdır.
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="buildingCounty">İlçe</label>
+        <input 
+        id="buildingCounty"
+        type="text"
+        name="county"
+        required
+        pattern="^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]+$"
+        minlength="3"
+        [(ngModel)] = "formData.county"
+        #county = "ngModel"
+        (keydown.enter)="focusNext($event)"
+        />
+        <div *ngIf="county.invalid && county.touched" class="alert">
+            <div *ngIf="county.hasError('required')">
+                İlçe bilgisi zorunludur!
+            </div>
+            <div *ngIf="county.hasError('pattern')">
+                İlçe bilgisi sadece harflerden oluşmalıdır!
+            </div>
+            <div *ngIf="county.hasError('minlength')">
+                İlçe bilgisi en az 3 harften oluşmalıdır!
+            </div>
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <label for="buildingPostCode">Posta Kodu</label>
+        <input
+        id="buildingPostCode"
+        type="text"
+        name="postcode"
+        required
+        minlength="5"
+        maxlength="5"
+        pattern="^[0-9]{5}$"
+        [(ngModel)] = "formData.postcode"
+        #postcode = "ngModel"
+        (keydown.enter)="focusNext($event)"
+        />
+        <div *ngIf="postcode.invalid && postcode.touched" class="alert">
+            <div *ngIf="postcode.hasError('required')">
+                Posta Kodu bilgisi zorunludur!
+            </div>
+            <div *ngIf="postcode.hasError('pattern')">
+                Posta Kodu bilgisi 5 rakamdan oluşmalıdır!
+            </div>
+            <!-- <div *ngIf="postcode.hasError('minlength') || postcode.hasError('maxlength')">
+                Posta Kodu bilgisi 5 rakamdan oluşmalıdır!
+            </div> -->
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="buildingAddress">Adres</label>
+        <input
+        id="buildingAddress"
+        type="text"
+        name="address"
+        required
+        minlength="3"
+        [(ngModel)] = "formData.address"
+        #address ="ngModel"
+        (keydown.enter)="focusNext($event)"
+        />
+        <div *ngIf="address.invalid && address.touched" class="alert">
+            <div *ngIf="address.hasError('required')">
+                Adres bilgisi zorunludur!
+            </div>
+            <!-- <div *ngIf="address.hasError('pattern')">
+                Adres bilgisi geçerli karakterlerden oluşmalıdır!
+            </div> -->
+            <div *ngIf="address.hasError('minlength')">
+                Adres bilgisi en az 3 harften oluşmalıdır!
+            </div>
+        </div>
+    </div>
+
+    <div class="form-actions">
+        <button type="button" class="save-button" (click)="onSubmit()">{{submitLabel}}</button>
+        <button type="button" class="cancel-button" (click)="cancel.emit()">İptal</button>
+    </div>
+</form>
