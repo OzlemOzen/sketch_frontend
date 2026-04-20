@@ -12,7 +12,8 @@ import {
   RestrictedAreaApiService,
   RestrictedAreaDto
 } from '../features/restrictedArea/services/restricted-area-api.service';
-
+import { Observable, forkJoin, of } from 'rxjs';
+import { switchMap, map } from 'rxjs/operators';
 
 import {
   CreateRoomRequest,
@@ -746,10 +747,76 @@ console.log('this.sensors ids:', this.sensors.map(s => s.id));
   // this.refreshFaultySensors();
 
   this.sensors[index] = updatedSensor;
-this.sensors = [...this.sensors];
+  this.sensors = [...this.sensors];
+  this.refreshRoomStatuses();
+  this.refreshFaultySensors();
+}
 
-this.refreshRoomStatuses();
-this.refreshFaultySensors();
+
+get problematicRooms(): RoomViewModel[] {
+  return this.rooms.filter(
+    room =>
+      !room.is_corridor &&
+      (room.statusColor === 'warning' || room.statusColor === 'critical')
+  );
+}
+
+get warningRoomCount(): number {
+  return this.problematicRooms.filter(room => room.statusColor === 'warning').length;
+}
+
+get criticalRoomCount(): number {
+  return this.problematicRooms.filter(room => room.statusColor === 'critical').length;
+}
+
+trackByProblematicRoom(index: number, room: RoomViewModel): number {
+  return room.id ?? index;
+}
+getRoomStatusText(status?: 'normal' | 'warning' | 'critical' | 'unknown'): string {
+  switch (status) {
+    case 'critical':
+      return 'Kritik';
+    case 'warning':
+      return 'Uyarı';
+    case 'normal':
+      return 'Normal';
+    default:
+      return 'Bilinmiyor';
+  }
+}
+
+getRoomStatusMessage(room: RoomViewModel): string {
+  const messages: string[] = [];
+
+  if (
+    room.avgTemperature != null &&
+    room.temperature_min_value != null &&
+    room.temperature_max_value != null
+  ) {
+    if (room.avgTemperature < room.temperature_min_value) {
+      messages.push('Ortalama sıcaklık minimum eşik altındadır.');
+    } else if (room.avgTemperature > room.temperature_max_value) {
+      messages.push('Ortalama sıcaklık maksimum eşik üstündedir.');
+    }
+  }
+
+  if (
+    room.avgHumidity != null &&
+    room.humidity_min_value != null &&
+    room.humidity_max_value != null
+  ) {
+    if (room.avgHumidity < room.humidity_min_value) {
+      messages.push('Ortalama nem minimum eşik altındadır.');
+    } else if (room.avgHumidity > room.humidity_max_value) {
+      messages.push('Ortalama nem maksimum eşik üstündedir.');
+    }
+  }
+
+  if (messages.length === 0) {
+    return 'Oda değerleri izleniyor.';
+  }
+
+  return messages.join(' ');
 }
 
 
@@ -1984,6 +2051,7 @@ rebuildRoomHierarchy(): void {
           (area) => area.id === current.id
         );
 
+        console.log('restricted current statusColor:', current.title, current.statusColor);
         if (!alreadyExists) {
           candidate.restrictedAreas.push({
             id: current.id,
@@ -1994,9 +2062,13 @@ rebuildRoomHierarchy(): void {
             width: current.width,
             height: current.height,
             x_last: current.x_last!,
-            y_last: current.y_last!
+            y_last: current.y_last!,
+            statusColor: current.statusColor ?? 'unknown',
+            avgTemperature: current.avgTemperature ?? null,
+            avgHumidity: current.avgHumidity ?? null
           });
         }
+        console.log('candidate restrictedAreas:', candidate.title, candidate.restrictedAreas);
       }
     }
   }
@@ -2786,25 +2858,58 @@ onRoomSave(formValue: RoomFormValue): void {
       ...mapRoomFormToCreateRoomRequest(normalizedFormValue)
     };
 
-    this.roomApiService.createRoom(payload).subscribe({
-      next: () => {
-        this.roomModalOpen = false;
-        this.roomFormData = this.createEmptyRoomForm();
+    // this.roomApiService.createRoom(payload).subscribe({
+    //   next: () => {
+    //     this.roomModalOpen = false;
+    //     this.roomFormData = this.createEmptyRoomForm();
 
-        if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
-          this.loadFloorsByBuilding(this.currentBuildingId);
-          this.loadRooms(this.currentBuildingId, this.selectedFloorNumber, () => {
-            for (const parentRoom of parentRooms) {
-              this.syncParentRoomRestrictedAreas(parentRoom);
-            }
-          });
-        }
-      },
-      error: (error) => {
-        console.error('Oda kaydedilemedi:', error);
-        this.openAlert('Oda kaydedilemedi.');
-      }
-    });
+    //     if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
+    //       this.loadFloorsByBuilding(this.currentBuildingId);
+    //       this.loadRooms(this.currentBuildingId, this.selectedFloorNumber, () => {
+    //         for (const parentRoom of parentRooms) {
+    //           this.syncParentRoomRestrictedAreas(parentRoom);
+    //         }
+    //       });
+    //     }
+    //   },
+    //   error: (error) => {
+    //     console.error('Oda kaydedilemedi:', error);
+    //     this.openAlert('Oda kaydedilemedi.');
+    //   }
+    // });
+    this.roomApiService.createRoom(payload).subscribe({
+  next: () => {
+    this.roomModalOpen = false;
+    this.roomFormData = this.createEmptyRoomForm();
+
+    if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
+      this.loadFloorsByBuilding(this.currentBuildingId);
+
+      // this.syncParentRoomRestrictedAreas(parentRooms).subscribe({
+      //   next: () => {
+      //     this.loadRooms(this.currentBuildingId!, this.selectedFloorNumber!);
+      //   },
+      //   error: (error) => {
+      //     console.error('Restricted area senkron hatası:', error);
+      //     this.loadRooms(this.currentBuildingId!, this.selectedFloorNumber!);
+      //   }
+      // });
+      this.syncParentRoomRestrictedAreas(parentRooms).subscribe({
+  next: () => {
+    this.loadRooms(this.currentBuildingId!, this.selectedFloorNumber!);
+  },
+  error: (error: unknown) => {
+    console.error('Restricted area senkron hatası:', error);
+    this.loadRooms(this.currentBuildingId!, this.selectedFloorNumber!);
+  }
+});
+    }
+  },
+  error: (error) => {
+    console.error('Oda kaydedilemedi:', error);
+    this.openAlert('Oda kaydedilemedi.');
+  }
+});
   } catch (error) {
     console.error('Form verisi hatalı:', error);
     this.openAlert('Form verisi geçersiz.');
@@ -2841,59 +2946,6 @@ onBuildingUpdate(formValue: BuildingFormValue): void {
     }
   });
 }
-
-// onRoomUpdate(formValue: RoomFormValue): void {
-//   if (this.selectedRoomIdForUpdate === null) {
-//     return;
-//   }
-
-//   if (this.hasInvalidRoomPlacementForUpdate(this.selectedRoomIdForUpdate, formValue)) {
-//     this.openAlert('Bu oda yerleşimi geçersiz. Oda başka bir odayla birebir aynı olamaz ve yalnızca kısmi çakışma da içeremez.');
-//     return;
-//   }
-
-//   const selectedRoom = this.visibleRooms.find(
-//     (room) => room.id === this.selectedRoomIdForUpdate
-//   );
-
-//   if (!selectedRoom) {
-//     this.openAlert('Güncellenecek oda bulunamadı.');
-//     return;
-//   }
-
-//   try {
-//     const payload = {
-//       ...mapRoomFormToUpdateRoomRequest({
-//         ...formValue,
-//         buildingId: formValue.buildingId ?? this.currentBuildingId
-//       }),
-//       coordinate_id: selectedRoom.coordinate_id
-//     };
-
-//     console.log('room update formValue:', formValue);
-//     console.log('room update payload:', payload);
-
-//     this.roomApiService
-//       .updateRoom(this.selectedRoomIdForUpdate, payload)
-//       .subscribe({
-//         next: () => {
-//           this.roomUpdateModalOpen = false;
-//           this.selectedRoomIdForUpdate = null;
-
-//           if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
-//             this.loadRooms(this.currentBuildingId, this.selectedFloorNumber);
-//           }
-//         },
-//         error: (error: unknown) => {
-//           console.error('Oda güncellenemedi:', error);
-//           this.openAlert('Oda güncellenemedi.');
-//         }
-//       });
-//   } catch (error) {
-//     console.error('Form verisi hatalı:', error);
-//     this.openAlert('Form verisi geçersiz.');
-//   }
-// }
 
 // onRoomUpdate(formValue: RoomFormValue): void {
 //   if (this.selectedRoomIdForUpdate === null) {
@@ -3132,26 +3184,64 @@ onRoomUpdate(formValue: RoomFormValue): void {
       coordinate_id: selectedRoom.coordinate_id ?? null
     };
 
-    this.roomApiService
-      .updateRoom(this.selectedRoomIdForUpdate, payload)
-      .subscribe({
-        next: () => {
-          this.roomUpdateModalOpen = false;
-          this.selectedRoomIdForUpdate = null;
+    // this.roomApiService
+    //   .updateRoom(this.selectedRoomIdForUpdate, payload)
+    //   .subscribe({
+    //     next: () => {
+    //       this.roomUpdateModalOpen = false;
+    //       this.selectedRoomIdForUpdate = null;
 
-          if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
-            this.loadRooms(this.currentBuildingId, this.selectedFloorNumber, () => {
-              for (const parentRoom of parentRooms) {
-                this.syncParentRoomRestrictedAreas(parentRoom, selectedRoom.id);
-              }
-            });
-          }
-        },
-        error: (error: unknown) => {
-          console.error('Oda güncellenemedi:', error);
-          this.openAlert('Oda güncellenemedi.');
-        }
-      });
+    //       if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
+    //         this.loadRooms(this.currentBuildingId, this.selectedFloorNumber, () => {
+    //           for (const parentRoom of parentRooms) {
+    //             this.syncParentRoomRestrictedAreas(parentRoom, selectedRoom.id);
+    //           }
+    //         });
+    //       }
+    //     },
+    //     error: (error: unknown) => {
+    //       console.error('Oda güncellenemedi:', error);
+    //       this.openAlert('Oda güncellenemedi.');
+    //     }
+    //   });
+
+    this.roomApiService.updateRoom(this.selectedRoomIdForUpdate, payload).subscribe({
+  next: () => {
+    this.roomUpdateModalOpen = false;
+    this.selectedRoomIdForUpdate = null;
+
+    if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
+      // this.syncParentRoomRestrictedAreas(
+      //   parentRooms,
+      //   selectedRoom.id
+      // ).subscribe({
+      //   next: () => {
+      //     this.loadRooms(this.currentBuildingId!, this.selectedFloorNumber!);
+      //   },
+      //   error: (error) => {
+      //     console.error('Restricted area senkron hatası:', error);
+      //     this.loadRooms(this.currentBuildingId!, this.selectedFloorNumber!);
+      //   }
+      // });
+      this.syncParentRoomRestrictedAreas(
+  parentRooms,
+  selectedRoom.id
+).subscribe({
+  next: () => {
+    this.loadRooms(this.currentBuildingId!, this.selectedFloorNumber!);
+  },
+  error: (error: unknown) => {
+    console.error('Restricted area senkron hatası:', error);
+    this.loadRooms(this.currentBuildingId!, this.selectedFloorNumber!);
+  }
+});
+    }
+  },
+  error: (error) => {
+    console.error('Oda güncellenemedi:', error);
+    this.openAlert('Oda güncellenemedi.');
+  }
+});
   } catch (error) {
     console.error('Form verisi hatalı:', error);
     this.openAlert('Form verisi geçersiz.');
@@ -3548,98 +3638,187 @@ private buildRestrictedAreasPayloadForCandidate(
 //   });
 // }
 
+// private syncParentRoomRestrictedAreas(
+//   parentRoom: RoomViewModel,
+//   excludeRoomId?: number,
+//   onDone?: () => void
+// ): void {
+//   if (parentRoom.id == null) {
+//     onDone?.();
+//     return;
+//   }
+
+//   const newRestrictedAreas = this.buildRestrictedAreasPayloadForCandidate(parentRoom, excludeRoomId);
+
+//   this.restrictedAreaApiService.getRestrictedAreasByRoomId(parentRoom.id).subscribe({
+//     next: (existingRestrictedAreas) => {
+//       const deleteRequests = existingRestrictedAreas.map((area) =>
+//         this.restrictedAreaApiService.deleteRestrictedArea(area.id as number)
+//       );
+
+//       let completedDeletes = 0;
+//       const continueAfterDeletes = () => {
+//         if (newRestrictedAreas.length === 0) {
+//           onDone?.();
+//           return;
+//         }
+
+//         let completedCreates = 0;
+
+//         for (const area of newRestrictedAreas) {
+//           this.restrictedAreaApiService.createRestrictedArea(area).subscribe({
+//             next: () => {
+//               completedCreates++;
+//               if (completedCreates === newRestrictedAreas.length) {
+//                 onDone?.();
+//               }
+//             },
+//             error: (error) => {
+//               console.error('Restricted area oluşturulamadı:', error);
+//               completedCreates++;
+//               if (completedCreates === newRestrictedAreas.length) {
+//                 onDone?.();
+//               }
+//             }
+//           });
+//         }
+//       };
+
+//       if (deleteRequests.length === 0) {
+//         continueAfterDeletes();
+//         return;
+//       }
+
+//       for (const req of deleteRequests) {
+//         req.subscribe({
+//           next: () => {
+//             completedDeletes++;
+//             if (completedDeletes === deleteRequests.length) {
+//               continueAfterDeletes();
+//             }
+//           },
+//           error: (error) => {
+//             console.error('Restricted area silinemedi:', error);
+//             completedDeletes++;
+//             if (completedDeletes === deleteRequests.length) {
+//               continueAfterDeletes();
+//             }
+//           }
+//         });
+//       }
+//     },
+//     error: (error) => {
+//       console.error('Restricted area kayıtları alınamadı:', error);
+//       onDone?.();
+//     }
+//   });
+// }
+
+// private syncParentRoomRestrictedAreas(
+//   parentRooms: RoomViewModel[],
+//   excludeRoomId?: number
+// ) {
+//   if (!parentRooms.length) {
+//     return of(null);
+//   }
+
+//   const roomSyncRequests = parentRooms.map((parentRoom) => {
+//     if (parentRoom.id == null) {
+//       return of(null);
+//     }
+
+//     const newRestrictedAreas =
+//       this.buildRestrictedAreasPayloadForCandidate(parentRoom, excludeRoomId);
+
+//     return this.restrictedAreaApiService.getRestrictedAreasByRoomId(parentRoom.id).pipe(
+//       switchMap((existingRestrictedAreas) => {
+//         const deleteRequests = existingRestrictedAreas.map((area) =>
+//           this.restrictedAreaApiService.deleteRestrictedArea(area.id as number)
+//         );
+
+//         const deleteAll$ = deleteRequests.length ? forkJoin(deleteRequests) : of([]);
+
+//         return deleteAll$.pipe(
+//           switchMap(() => {
+//             const createRequests = newRestrictedAreas.map((area) =>
+//               this.restrictedAreaApiService.createRestrictedArea(area)
+//             );
+
+//             return createRequests.length ? forkJoin(createRequests) : of([]);
+//           })
+//         );
+//       })
+//     );
+//   });
+
+//   return forkJoin(roomSyncRequests);
+// }
+
 private syncParentRoomRestrictedAreas(
-  parentRoom: RoomViewModel,
-  excludeRoomId?: number,
-  onDone?: () => void
-): void {
-  if (parentRoom.id == null) {
-    onDone?.();
-    return;
+  parentRooms: RoomViewModel[],
+  excludeRoomId?: number
+): Observable<null> {
+  const validParentRooms = parentRooms.filter(
+    (parentRoom) => parentRoom.id != null
+  );
+
+  if (!validParentRooms.length) {
+    return of(null);
   }
 
-  const newRestrictedAreas = this.buildRestrictedAreasPayloadForCandidate(parentRoom, excludeRoomId);
+  const requests = validParentRooms.map((parentRoom) => {
+    const newRestrictedAreas = this.buildRestrictedAreasPayloadForCandidate(
+      parentRoom,
+      excludeRoomId
+    );
 
-  this.restrictedAreaApiService.getRestrictedAreasByRoomId(parentRoom.id).subscribe({
-    next: (existingRestrictedAreas) => {
-      const deleteRequests = existingRestrictedAreas.map((area) =>
-        this.restrictedAreaApiService.deleteRestrictedArea(area.id as number)
+    return this.restrictedAreaApiService
+      .getRestrictedAreasByRoomId(parentRoom.id as number)
+      .pipe(
+        switchMap((existingRestrictedAreas) => {
+          const deleteRequests = existingRestrictedAreas.map((area) =>
+            this.restrictedAreaApiService.deleteRestrictedArea(area.id as number)
+          );
+
+          const deleteAll$ = deleteRequests.length > 0
+            ? forkJoin(deleteRequests)
+            : of([]);
+
+          return deleteAll$.pipe(
+            switchMap(() => {
+              const createRequests = newRestrictedAreas.map((area) =>
+                this.restrictedAreaApiService.createRestrictedArea(area)
+              );
+
+              return createRequests.length > 0
+                ? forkJoin(createRequests)
+                : of([]);
+            })
+          );
+        })
       );
-
-      let completedDeletes = 0;
-      const continueAfterDeletes = () => {
-        if (newRestrictedAreas.length === 0) {
-          onDone?.();
-          return;
-        }
-
-        let completedCreates = 0;
-
-        for (const area of newRestrictedAreas) {
-          this.restrictedAreaApiService.createRestrictedArea(area).subscribe({
-            next: () => {
-              completedCreates++;
-              if (completedCreates === newRestrictedAreas.length) {
-                onDone?.();
-              }
-            },
-            error: (error) => {
-              console.error('Restricted area oluşturulamadı:', error);
-              completedCreates++;
-              if (completedCreates === newRestrictedAreas.length) {
-                onDone?.();
-              }
-            }
-          });
-        }
-      };
-
-      if (deleteRequests.length === 0) {
-        continueAfterDeletes();
-        return;
-      }
-
-      for (const req of deleteRequests) {
-        req.subscribe({
-          next: () => {
-            completedDeletes++;
-            if (completedDeletes === deleteRequests.length) {
-              continueAfterDeletes();
-            }
-          },
-          error: (error) => {
-            console.error('Restricted area silinemedi:', error);
-            completedDeletes++;
-            if (completedDeletes === deleteRequests.length) {
-              continueAfterDeletes();
-            }
-          }
-        });
-      }
-    },
-    error: (error) => {
-      console.error('Restricted area kayıtları alınamadı:', error);
-      onDone?.();
-    }
   });
+
+  return forkJoin(requests).pipe(map(() => null));
 }
 
-private createRestrictedAreasSequentially(restrictedAreas: RestrictedAreaDto[]): void {
-  if (!restrictedAreas.length) {
-    return;
-  }
 
-  for (const area of restrictedAreas) {
-    this.restrictedAreaApiService.createRestrictedArea(area).subscribe({
-      next: () => {
-        console.log('Restricted area oluşturuldu:', area);
-      },
-      error: (error) => {
-        console.error('Restricted area oluşturulamadı:', error);
-      }
-    });
-  }
-}
+// private createRestrictedAreasSequentially(restrictedAreas: RestrictedAreaDto[]): void {
+//   if (!restrictedAreas.length) {
+//     return;
+//   }
+
+//   for (const area of restrictedAreas) {
+//     this.restrictedAreaApiService.createRestrictedArea(area).subscribe({
+//       next: () => {
+//         console.log('Restricted area oluşturuldu:', area);
+//       },
+//       error: (error) => {
+//         console.error('Restricted area oluşturulamadı:', error);
+//       }
+//     });
+//   }
+// }
 
 // private findParentRoomsForForm(
 //   formValue: RoomFormValue,
@@ -4598,6 +4777,36 @@ private getSensorsByRoomId(roomId: number): SensorViewModel[] {
   return this.sensors.filter(sensor => sensor.room_id === roomId);
 }
 
+// private getRoomAverageValues(roomId: number): {
+//   avgTemperature: number | null;
+//   avgHumidity: number | null;
+// } {
+//   const roomSensors = this.getSensorsByRoomId(roomId);
+
+//   const temperatureValues = roomSensors
+//     .map(sensor => sensor.sicaklik)
+//     .filter((value): value is number => typeof value === 'number');
+
+//   const humidityValues = roomSensors
+//     .map(sensor => sensor.nem)
+//     .filter((value): value is number => typeof value === 'number');
+
+//   const avgTemperature =
+//     temperatureValues.length > 0
+//       ? temperatureValues.reduce((sum, value) => sum + value, 0) / temperatureValues.length
+//       : null;
+
+//   const avgHumidity =
+//     humidityValues.length > 0
+//       ? humidityValues.reduce((sum, value) => sum + value, 0) / humidityValues.length
+//       : null;
+
+//   return {
+//     avgTemperature,
+//     avgHumidity
+//   };
+// }
+
 private getRoomAverageValues(roomId: number): {
   avgTemperature: number | null;
   avgHumidity: number | null;
@@ -4627,6 +4836,59 @@ private getRoomAverageValues(roomId: number): {
     avgHumidity
   };
 }
+
+// private getRoomStatus(
+//   avgTemp: number | null,
+//   avgHumidity: number | null,
+//   room: RoomViewModel
+// ): 'normal' | 'warning' | 'critical' | 'unknown' {
+//   let tempStatus: 'normal' | 'warning' | 'critical' | 'unknown' = 'unknown';
+//   let humidityStatus: 'normal' | 'warning' | 'critical' | 'unknown' = 'unknown';
+
+//   if (
+//     avgTemp != null &&
+//     room.temperature_min_value != null &&
+//     room.temperature_max_value != null &&
+//     room.temperature_optimum_value != null
+//   ) {
+//     if (avgTemp < room.temperature_min_value || avgTemp > room.temperature_max_value) {
+//       tempStatus = 'critical';
+//     } else if (Math.abs(avgTemp - room.temperature_optimum_value) < 0.0001) {
+//       tempStatus = 'normal';
+//     } else {
+//       tempStatus = 'warning';
+//     }
+//   }
+
+//   if (
+//     avgHumidity != null &&
+//     room.humidity_min_value != null &&
+//     room.humidity_max_value != null &&
+//     room.humidity_optimum_value != null
+//   ) {
+//     if (avgHumidity < room.humidity_min_value || avgHumidity > room.humidity_max_value) {
+//       humidityStatus = 'critical';
+//     } else if (Math.abs(avgHumidity - room.humidity_optimum_value) < 0.0001) {
+//       humidityStatus = 'normal';
+//     } else {
+//       humidityStatus = 'warning';
+//     }
+//   }
+
+//   if (tempStatus === 'critical' || humidityStatus === 'critical') {
+//     return 'critical';
+//   }
+
+//   if (tempStatus === 'warning' || humidityStatus === 'warning') {
+//     return 'warning';
+//   }
+
+//   if (tempStatus === 'normal' || humidityStatus === 'normal') {
+//     return 'normal';
+//   }
+
+//   return 'unknown';
+// }
 
 private getRoomStatus(
   avgTemp: number | null,
@@ -4704,6 +4966,52 @@ private getRoomStatus(
 //   });
 // }
 
+// private refreshRoomStatuses(): void {
+//   this.rooms = this.rooms.map(room => {
+//     if (room.is_corridor || room.id == null) {
+//       return {
+//         ...room,
+//         statusColor: 'unknown',
+//         avgTemperature: null,
+//         avgHumidity: null
+//       };
+//     }
+
+//     const { avgTemperature, avgHumidity } = this.getRoomAverageValues(room.id);
+//     const statusColor = this.getRoomStatus(avgTemperature, avgHumidity, room);
+
+//     return {
+//       ...room,
+//       avgTemperature,
+//       avgHumidity,
+//       statusColor
+//     };
+//   });
+// }
+
+// private refreshRoomStatuses(): void {
+//   this.rooms = this.rooms.map(room => {
+//     if (room.is_corridor || room.id == null) {
+//       return {
+//         ...room,
+//         statusColor: 'unknown',
+//         avgTemperature: null,
+//         avgHumidity: null
+//       };
+//     }
+
+//     const { avgTemperature, avgHumidity } = this.getRoomAverageValues(room.id);
+//     const statusColor = this.getRoomStatus(avgTemperature, avgHumidity, room);
+
+//     return {
+//       ...room,
+//       avgTemperature,
+//       avgHumidity,
+//       statusColor
+//     };
+//   });
+// }
+
 private refreshRoomStatuses(): void {
   this.rooms = this.rooms.map(room => {
     if (room.is_corridor || room.id == null) {
@@ -4725,7 +5033,12 @@ private refreshRoomStatuses(): void {
       statusColor
     };
   });
+
+  this.rebuildRoomHierarchy();
 }
+
+
+
 sensorToViewModel(sensor: Sensor, floor_number?: number): SensorViewModel {
   return {
     id: sensor.id,

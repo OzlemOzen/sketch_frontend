@@ -141,6 +141,9 @@ export interface RestrictedAreaViewModel {
   height: number;
   x_last: number;
   y_last: number;
+  statusColor?: 'normal' | 'warning' | 'critical' | 'unknown';
+  avgTemperature?: number | null;
+  avgHumidity?: number | null;
 }
 
 export interface RoomViewModel {

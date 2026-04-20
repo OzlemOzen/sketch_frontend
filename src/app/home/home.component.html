@@ -36,41 +36,6 @@
         </option>
       </select>
     </div>
-<!-- <select
-        id="floorSelect"
-        class="selector-input"
-        [value]="selectedFloorNumber ?? ''"
-        [disabled]="currentBuildingId === null || floors.length === 0"
-        (change)="onFloorChange(+$any($event.target).value)"
-      >
-        <option value="" disabled selected>
-          {{ currentBuildingId === null ? 'Önce bina seçiniz' : 'Kat seçiniz' }}
-        </option>
-        <option *ngFor="let floor of floors" [value]="floor.floor_number">
-          Kat {{ floor.floor_number }}
-        </option>
-      </select> -->
-
-
-    <!-- <div class="selector-group">
-      <label for="floorSelect" class="selector-label">Kat Seç</label>
-      
-       <select
-  id="floorSelect"
-  class="selector-input"
-  [(ngModel)]="selectedFloorNumber"
-  [disabled]="currentBuildingId === null || floors.length === 0"
-  (ngModelChange)="onFloorChange($event)"
->
-  <option [ngValue]="null" disabled>
-    {{ currentBuildingId === null ? 'Önce bina seçiniz' : 'Kat seçiniz' }}
-  </option>
-  <option *ngFor="let floor of floors" [ngValue]="floor.floor_number">
-    Kat {{ floor.floor_number }}
-  </option>
-</select>
-    </div>
-  </div> -->
 
   <div class="selector-group">
   <label for="floorSelect" class="selector-label">Kat Seç</label>
@@ -90,9 +55,9 @@
   </select>
 </div>
 
-  <aside class="sensor-alert-panel">
+  <!-- <aside class="sensor-alert-panel">
     <div class="sensor-alert-header">
-      <h3>Hatalı Sensör Akışı</h3>
+      <h3>ODALARIN KRİTİKLİKLERİ</h3>
       <div class="sensor-summary-bar">
         <span class="summary-pill warning">
           Uyarı: {{ warningSensorCount }}
@@ -100,9 +65,9 @@
         <span class="summary-pill critical">
           Kritik: {{ criticalSensorCount }}
         </span>
-        <!-- <span class="summary-pill total">
+        <span class="summary-pill total">
           Toplam Problemli Sensör: {{ totalProblemSensorCount }}
-        </span> -->
+        </span>
         <span class="summary-pill alert-count" *ngIf="faultySensors.length > 0">
         Bu kattaki sensör sayısı: {{ faultySensors.length }}
       </span>
@@ -113,7 +78,7 @@
       <!-- <div
         class="sensor-alert-card"
         *ngFor="let item of faultySensors; trackBy: trackByFaultySensor"
-      > -->
+      >
       <div
       class="sensor-alert-card"
       [ngClass]="item.status"
@@ -149,6 +114,54 @@
       </div>
     </ng-template>
   </aside>
+</div> -->
+
+<aside class="sensor-alert-panel">
+  <div class="sensor-alert-header">
+    <h3>ODALARIN KRİTİKLİKLERİ</h3>
+    <div class="sensor-summary-bar">
+      <span class="summary-pill warning">
+        Uyarı: {{ warningRoomCount }}
+      </span>
+      <span class="summary-pill critical">
+        Kritik: {{ criticalRoomCount }}
+      </span>
+      <span class="summary-pill alert-count" *ngIf="problematicRooms.length > 0">
+        Bu kattaki problemli oda sayısı: {{ problematicRooms.length }}
+      </span>
+    </div>
+  </div>
+
+  <div class="sensor-alert-list" *ngIf="problematicRooms.length > 0; else noProblematicRooms">
+    <div
+      class="sensor-alert-card"
+      [ngClass]="room.statusColor"
+      *ngFor="let room of problematicRooms; trackBy: trackByProblematicRoom"
+    >
+      <div class="sensor-alert-card-top">
+        <strong>{{ room.title }}</strong>
+        <span class="sensor-alert-status" [class]="room.statusColor">
+          {{ getRoomStatusText(room.statusColor) }}
+        </span>
+      </div>
+
+      <div class="sensor-alert-meta">
+        <span *ngIf="room.avgTemperature != null">Ortalama Sıcaklık: {{ room.avgTemperature | number:'1.1-1' }}</span>
+        <span *ngIf="room.avgHumidity != null">Ortalama Nem: {{ room.avgHumidity | number:'1.1-1' }}</span>
+      </div>
+
+      <div class="sensor-alert-message">
+        {{ getRoomStatusMessage(room) }}
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noProblematicRooms>
+    <div class="sensor-alert-empty">
+      Şu anda problemli oda bulunmuyor.
+    </div>
+  </ng-template>
+</aside>
 </div>
 
 <section
@@ -193,12 +206,21 @@
         <div
           *ngFor="let restrictedRoom of room.restrictedAreas; trackBy: trackByRestrictedRoom"
           class="restrictedRoom"
+          [ngClass]="{
+            'restrictedRoom-normal': restrictedRoom.statusColor === 'normal',
+            'restrictedRoom-warning': restrictedRoom.statusColor === 'warning',
+            'restrictedRoom-critical': restrictedRoom.statusColor === 'critical',
+            'restrictedRoom-unknown': restrictedRoom.statusColor === 'unknown'
+          }"
           [style.left.px]="restrictedRoom.x - (room.x ?? 0)"
           [style.top.px]="(room.y ?? 0) - restrictedRoom.y"
           [style.width.px]="restrictedRoom.width"
           [style.height.px]="restrictedRoom.height"
         >
           <span class="restricted-room-title">{{ restrictedRoom.title }}</span>
+          <!-- <span class="restricted-room-title">
+  {{ restrictedRoom.title }} - {{ restrictedRoom.statusColor }}
+</span> -->
         </div>
       </div>
 
