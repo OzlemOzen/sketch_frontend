@@ -116,6 +116,18 @@ export interface Coordinate {
   height: number;
 }
 
+// export interface Room {
+//   id?: number;
+//   title: string;
+//   floor_number: number;
+//   coordinate_id?: number | null;
+//   building_id: number;
+//   is_corridor: boolean;
+//   coordinate?: Coordinate | null;
+//   restrictedAreas?: RestrictedArea[];
+//   // sensors?: Sensor[];
+// }
+
 export interface Room {
   id?: number;
   title: string;
@@ -123,9 +135,25 @@ export interface Room {
   coordinate_id?: number | null;
   building_id: number;
   is_corridor: boolean;
-  coordinate?: Coordinate | null;
-  restrictedAreas?: RestrictedArea[];
-  // sensors?: Sensor[];
+
+  temperature_min_value: number | null;
+  temperature_max_value: number | null;
+  temperature_optimum_value: number | null;
+
+  humidity_min_value: number | null;
+  humidity_max_value: number | null;
+  humidity_optimum_value: number | null;
+
+  coordinate?: {
+    id?: number;
+    start_coordinate_x: number;
+    start_coordinate_y: number;
+    width: number;
+    height: number;
+  } | null;
+
+  restricted_areas?: RestrictedArea[];
+  sensors?: Sensor[];
 }
 
 export interface RestrictedArea {

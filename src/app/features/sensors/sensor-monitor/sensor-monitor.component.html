@@ -1,6 +1,6 @@
-<section class="sensor-monitor-page">
+<!-- <section class="sensor-monitor-page">
   <div class="sensor-monitor-header">
-    <h1>Tüm Binaların Sensör Akışı</h1>
+    <h1>Tüm Odaların Durumları</h1>
     <a routerLink="/" class="back-button">Geri Dön</a>
   </div>
 
@@ -24,10 +24,6 @@
       </div>
 
       <div *ngIf="group.sensors.length > 0; else noBuildingFaults" class="sensor-list">
-        <!-- <div
-          class="sensor-alert-card"
-          *ngFor="let item of group.sensors; trackBy: trackBySensor"
-        > -->
         <div
         class="sensor-alert-card"
         [ngClass]="item.status"
@@ -68,6 +64,169 @@
   <ng-template #noData>
     <div *ngIf="!loading" class="sensor-alert-empty">
       Gösterilecek sensör verisi bulunamadı.
+    </div>
+  </ng-template>
+</section> -->
+
+
+<!-- <section class="sensor-monitor-page">
+  <div class="sensor-monitor-header">
+    <h1>Tüm Odaların Durumları</h1>
+    <a routerLink="/" class="back-button">Geri Dön</a>
+  </div>
+
+  <div *ngIf="loading" class="sensor-alert-empty">
+    Oda verileri yükleniyor...
+  </div>
+
+  <div *ngIf="!loading && buildingGroups.length > 0; else noData" class="building-groups">
+    <section
+      class="building-section"
+      *ngFor="let group of buildingGroups; trackBy: trackByBuilding"
+    >
+      <div class="building-header">
+        <h2>{{ group.buildingTitle }}</h2>
+
+        <div class="building-summary">
+          <span class="summary warning">Uyarı: {{ group.warningCount }}</span>
+          <span class="summary critical">Kritik: {{ group.criticalCount }}</span>
+          <span class="summary total">Toplam Problemli Oda: {{ group.rooms.length }}</span>
+        </div>
+      </div>
+
+      <div *ngIf="group.rooms.length > 0; else noBuildingFaults" class="sensor-list">
+        <div
+          class="sensor-alert-card"
+          [ngClass]="room.status"
+          *ngFor="let room of group.rooms; trackBy: trackByRoom"
+        >
+          <div class="sensor-alert-card-top">
+            <strong>{{ room.title }}</strong>
+            <span class="sensor-alert-status" [class]="room.status">
+              {{ room.statusText }}
+            </span>
+          </div>
+
+          <div class="sensor-alert-meta">
+            <span>Kat: {{ room.floorNumber }}</span>
+            <span *ngIf="room.avgTemperature !== null">
+              Ortalama Sıcaklık: {{ room.avgTemperature | number:'1.1-1' }}
+            </span>
+            <span *ngIf="room.avgHumidity !== null">
+              Ortalama Nem: {{ room.avgHumidity | number:'1.1-1' }}
+            </span>
+          </div>
+
+          <div class="sensor-alert-message">
+            {{ room.message }}
+          </div>
+
+          <div class="sensor-alert-time" *ngIf="room.updatedAt">
+            {{ room.updatedAt }}
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noBuildingFaults>
+        <div class="sensor-alert-empty">
+          Bu binada şu anda problemli oda bulunmuyor.
+        </div>
+      </ng-template>
+    </section>
+  </div>
+
+  <ng-template #noData>
+    <div *ngIf="!loading" class="sensor-alert-empty">
+      Gösterilecek oda verisi bulunamadı.
+    </div>
+  </ng-template>
+</section> -->
+
+
+<section class="sensor-monitor-page">
+  <div class="sensor-monitor-header">
+    <h1>Tüm Odaların Durumları</h1>
+    <a routerLink="/" class="back-button">Geri Dön</a>
+  </div>
+
+  <div *ngIf="loading" class="sensor-alert-empty">
+    Oda verileri yükleniyor...
+  </div>
+
+  <div *ngIf="!loading && buildingGroups.length > 0; else noData" class="building-groups">
+    <section
+      class="building-section"
+      *ngFor="let group of buildingGroups; trackBy: trackByBuilding"
+    >
+      <div class="building-header">
+        <h2>{{ group.buildingTitle }}</h2>
+
+        <div class="building-summary">
+          <span class="summary warning">Uyarı: {{ group.warningCount }}</span>
+          <span class="summary critical">Kritik: {{ group.criticalCount }}</span>
+          <span class="summary total">
+            Toplam Problemli Oda: {{ getTotalProblematicRooms(group) }}
+          </span>
+        </div>
+      </div>
+
+      <div *ngIf="group.floors.length > 0; else noBuildingFaults" class="floor-groups">
+        <section class="floor-section" *ngFor="let floor of group.floors; trackBy: trackByFloor">
+          <div class="floor-header">
+            <h3>Kat {{ floor.floorNumber }}</h3>
+
+            <div class="floor-summary">
+              <span class="summary warning">Uyarı: {{ floor.warningCount }}</span>
+              <span class="summary critical">Kritik: {{ floor.criticalCount }}</span>
+            </div>
+          </div>
+
+          <div class="sensor-list">
+            <div
+              class="sensor-alert-card"
+              [ngClass]="room.status"
+              *ngFor="let room of floor.rooms; trackBy: trackByRoom"
+            >
+              <div class="sensor-alert-card-top">
+                <strong>{{ room.title }}</strong>
+                <span class="sensor-alert-status" [class]="room.status">
+                  {{ room.statusText }}
+                </span>
+              </div>
+
+              <div class="sensor-alert-meta">
+                <span>Kat: {{ room.floorNumber }}</span>
+                <span *ngIf="room.avgTemperature !== null">
+                  Ortalama Sıcaklık: {{ room.avgTemperature | number:'1.1-1' }}
+                </span>
+                <span *ngIf="room.avgHumidity !== null">
+                  Ortalama Nem: {{ room.avgHumidity | number:'1.1-1' }}
+                </span>
+              </div>
+
+              <div class="sensor-alert-message">
+                {{ room.message }}
+              </div>
+
+              <div class="sensor-alert-time" *ngIf="room.updatedAt">
+                {{ room.updatedAt }}
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <ng-template #noBuildingFaults>
+        <div class="sensor-alert-empty">
+          Bu binada şu anda problemli oda bulunmuyor.
+        </div>
+      </ng-template>
+    </section>
+  </div>
+
+  <ng-template #noData>
+    <div *ngIf="!loading" class="sensor-alert-empty">
+      Gösterilecek oda verisi bulunamadı.
     </div>
   </ng-template>
 </section>

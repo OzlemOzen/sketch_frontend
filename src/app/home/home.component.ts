@@ -5070,7 +5070,30 @@ sensorToViewModel(sensor: Sensor, floor_number?: number): SensorViewModel {
     };
   }
 
-  viewModelToRoom(room: RoomViewModel): Room {
+//   viewModelToRoom(room: RoomViewModel): Room {
+//   return {
+//     id: room.id,
+//     title: room.title,
+//     floor_number: room.floor_number,
+//     building_id: room.building_id,
+//     coordinate_id: room.coordinate_id ?? null,
+//     is_corridor: room.is_corridor,
+//     coordinate: room.is_corridor || room.x === null || room.y === null || room.width === null || room.height === null
+//       ? null
+//       : this.viewModelToCoordinate(
+//           room.x,
+//           room.y,
+//           room.width,
+//           room.height,
+//           room.coordinate_id ?? undefined
+//         ),
+//     restricted_areas: room.restrictedAreas.map((area) =>
+//       this.viewModelToRestrictedArea(area)
+//     )
+//   };
+// }
+
+viewModelToRoom(room: RoomViewModel): Room {
   return {
     id: room.id,
     title: room.title,
@@ -5078,16 +5101,30 @@ sensorToViewModel(sensor: Sensor, floor_number?: number): SensorViewModel {
     building_id: room.building_id,
     coordinate_id: room.coordinate_id ?? null,
     is_corridor: room.is_corridor,
-    coordinate: room.is_corridor || room.x === null || room.y === null || room.width === null || room.height === null
-      ? null
-      : this.viewModelToCoordinate(
-          room.x,
-          room.y,
-          room.width,
-          room.height,
-          room.coordinate_id ?? undefined
-        ),
-    restrictedAreas: room.restrictedAreas.map((area) =>
+
+    temperature_min_value: room.temperature_min_value ?? null,
+    temperature_max_value: room.temperature_max_value ?? null,
+    temperature_optimum_value: room.temperature_optimum_value ?? null,
+    humidity_min_value: room.humidity_min_value ?? null,
+    humidity_max_value: room.humidity_max_value ?? null,
+    humidity_optimum_value: room.humidity_optimum_value ?? null,
+
+    coordinate:
+      room.is_corridor ||
+      room.x === null ||
+      room.y === null ||
+      room.width === null ||
+      room.height === null
+        ? null
+        : this.viewModelToCoordinate(
+            room.x,
+            room.y,
+            room.width,
+            room.height,
+            room.coordinate_id ?? undefined
+          ),
+
+    restricted_areas: room.restrictedAreas.map((area) =>
       this.viewModelToRestrictedArea(area)
     )
   };

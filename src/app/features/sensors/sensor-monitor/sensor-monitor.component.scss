@@ -484,3 +484,36 @@
     gap: 6px;
   }
 }
+
+
+.floor-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.floor-section {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 14px;
+}
+
+.floor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.floor-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #1f2937;
+}
+
+.floor-summary {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
