@@ -442,6 +442,22 @@ initWebSocket(): void {
 faultySensors: FaultySensorItem[] = [];
 
 
+get isAnyFormOpen(): boolean {
+  return (
+    this.buildingModalOpen ||
+    this.buildingUpdateModalOpen ||
+    this.buildingDeleteModalOpen ||
+    this.floorModalOpen ||
+    this.roomModalOpen ||
+    this.roomUpdateModalOpen ||
+    this.roomDeleteModalOpen ||
+    this.sensorModalOpen ||
+    this.sensorUpdateModalOpen ||
+    this.sensorDeleteModalOpen
+  );
+}
+
+
 handleSensorStreamMessage(message: any): void {
   if (!message || typeof message.sensor_id !== 'number') {
     return;
@@ -481,6 +497,10 @@ console.log('this.sensors ids:', this.sensors.map(s => s.id));
 
   this.sensors[index] = updatedSensor;
   this.sensors = [...this.sensors];
+
+  if (this.isAnyFormOpen) {
+    return;
+  }
   this.refreshRoomStatuses();
   this.refreshFaultySensors();
 }
@@ -550,37 +570,6 @@ getRoomStatusMessage(room: RoomViewModel): string {
   }
 
   return messages.join(' ');
-}
-
-
-
-private getMetricStatus(
-  currentValue: number | null | undefined,
-  minValue: number | null,
-  maxValue: number | null,
-  optimumValue: number | null
-): 'green' | 'yellow' | 'red' | 'unknown' {
-  if (
-    currentValue === null ||
-    currentValue === undefined ||
-    minValue === null ||
-    maxValue === null ||
-    optimumValue === null
-  ) {
-    return 'unknown';
-  }
-
-  const isOptimum = Math.abs(currentValue - optimumValue) < 0.0001;
-
-  if (currentValue < minValue || currentValue > maxValue) {
-    return 'red';
-  }
-
-  if (isOptimum) {
-    return 'green';
-  }
-
-  return 'yellow';
 }
 
 refreshFaultySensors(): void {
