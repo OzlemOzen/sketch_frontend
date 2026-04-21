@@ -49,7 +49,7 @@
                 </span>
               </div>
 
-              <div class="sensor-alert-meta">
+              <!-- <div class="sensor-alert-meta">
                 <span>Kat: {{ room.floorNumber }}</span>
                 <span *ngIf="room.avgTemperature !== null">
                   Ortalama Sıcaklık: {{ room.avgTemperature | number:'1.1-1' }}
@@ -57,7 +57,34 @@
                 <span *ngIf="room.avgHumidity !== null">
                   Ortalama Nem: {{ room.avgHumidity | number:'1.1-1' }}
                 </span>
-              </div>
+              </div> -->
+              <div class="sensor-alert-meta">
+        <div class="room-thresholds">
+          <span *ngIf="room.temperature_min_value != null">
+            Minimum sıcaklık: {{ room.temperature_min_value }}
+          </span>
+          <span *ngIf="room.temperature_optimum_value != null">
+            Optimum sıcaklık: {{ room.temperature_optimum_value }}
+          </span>
+          <span *ngIf="room.temperature_max_value != null">
+            Maksimum sıcaklık: {{ room.temperature_max_value }}
+          </span>
+          <span *ngIf="room.avgTemperature != null">Ortalama Sıcaklık: {{ room.avgTemperature | number:'1.1-1' }}</span>
+        </div>
+        <div class="room-thresholds">
+          <span *ngIf="room.humidity_min_value != null">
+            Minimum Nem: {{ room.humidity_min_value }}
+          </span>
+          <span *ngIf="room.humidity_optimum_value != null">
+            Optimum nem: {{ room.humidity_optimum_value }}
+          </span>
+          <span *ngIf="room.humidity_max_value != null">
+            Maksimum Nem: {{ room.humidity_max_value }}
+          </span>
+          <span *ngIf="room.avgHumidity != null">Ortalama Nem: {{ room.avgHumidity | number:'1.1-1' }}</span>
+        </div>
+        
+      </div>
 
               <div class="sensor-alert-message">
                 {{ room.message }}

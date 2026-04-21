@@ -27,6 +27,13 @@ interface ProblematicRoomItem {
   statusText: string;
   message: string;
   updatedAt: string;
+  temperature_optimum_value: number | null;
+  temperature_min_value: number | null;
+  temperature_max_value: number | null;
+
+  humidity_optimum_value: number | null;
+  humidity_min_value: number | null;
+  humidity_max_value: number | null;
 }
 
 interface BuildingFloorGroup {
@@ -465,7 +472,13 @@ export class SensorMonitorComponent implements OnInit, OnDestroy {
         message: this.getRoomStatusMessage(room, avgTemperature, avgHumidity),
         updatedAt: lastUpdated
           ? new Date(lastUpdated * 1000).toLocaleTimeString('tr-TR')
-          : '-'
+          : '-',
+        temperature_optimum_value: room.temperature_optimum_value,
+        temperature_min_value: room.temperature_min_value,
+        temperature_max_value: room.temperature_max_value,
+        humidity_optimum_value: room.humidity_optimum_value,
+        humidity_min_value: room.humidity_min_value,
+        humidity_max_value: room.humidity_max_value
       });
     });
 
@@ -490,4 +503,7 @@ trackByRoom(index: number, item: ProblematicRoomItem): number {
 getTotalProblematicRooms(group: BuildingRoomGroup): number {
   return group.floors.reduce((sum, floor) => sum + floor.rooms.length, 0);
 }
+
+
+
 }

@@ -24,19 +24,19 @@
 <div class="top-bar">
   <div class="selection-bar">
     <div class="selector-group">
-      <label for="buildingSelect" class="selector-label">Bina Seç</label>
-      <select
-        id="buildingSelect"
-        class="selector-input"
-        [value]="currentBuildingId ?? ''"
-        (change)="onBuildingChange(+$any($event.target).value)"
-      >
-        <option value="" disabled selected>Bina seçiniz</option>
-        <option *ngFor="let building of buildings" [value]="building.id">
-          {{ building.title }} - {{ building.city }} / {{ building.county }}
-        </option>
-      </select>
-    </div>
+  <label for="buildingSelect" class="selector-label">Bina Seç</label>
+  <select
+    id="buildingSelect"
+    class="selector-input"
+    [(ngModel)]="currentBuildingId"
+    (ngModelChange)="onBuildingChange($event)"
+  >
+    <option [ngValue]="null" disabled>Bina seçiniz</option>
+    <option *ngFor="let building of buildings" [ngValue]="building.id">
+      {{ building.title }} - {{ building.city }} / {{ building.county }}
+    </option>
+  </select>
+</div>
 
   <div class="selector-group">
   <label for="floorSelect" class="selector-label">Kat Seç</label>
@@ -47,7 +47,7 @@
     [disabled]="currentBuildingId === null || floors.length === 0"
     (ngModelChange)="onFloorChange($event)"
   >
-    <option [ngValue]="null">
+    <option [ngValue]="null" disabled>
       {{ currentBuildingId === null ? 'Önce bina seçiniz' : 'Kat seçiniz' }}
     </option>
     <option *ngFor="let floor of floors" [ngValue]="floor.floor_number">
@@ -56,75 +56,19 @@
   </select>
 </div>
 
-  <!-- <aside class="sensor-alert-panel">
-    <div class="sensor-alert-header">
-      <h3>ODALARIN KRİTİKLİKLERİ</h3>
-      <div class="sensor-summary-bar">
-        <span class="summary-pill warning">
-          Uyarı: {{ warningSensorCount }}
-        </span>
-        <span class="summary-pill critical">
-          Kritik: {{ criticalSensorCount }}
-        </span>
-        <span class="summary-pill total">
-          Toplam Problemli Sensör: {{ totalProblemSensorCount }}
-        </span>
-        <span class="summary-pill alert-count" *ngIf="faultySensors.length > 0">
-        Bu kattaki sensör sayısı: {{ faultySensors.length }}
-      </span>
-      </div>
-    </div>
-
-    <div class="sensor-alert-list" *ngIf="faultySensors.length > 0; else noFaultySensors">
-      <!-- <div
-        class="sensor-alert-card"
-        *ngFor="let item of faultySensors; trackBy: trackByFaultySensor"
-      >
-      <div
-      class="sensor-alert-card"
-      [ngClass]="item.status"
-      *ngFor="let item of faultySensors; trackBy: trackByFaultySensor"
-      >
-        <div class="sensor-alert-card-top">
-          <strong>{{ item.title }}</strong>
-          <span class="sensor-alert-status" [class]="item.status">
-            {{ item.statusText }}
-          </span>
-        </div>
-
-        <div class="sensor-alert-meta">
-          <span>Oda: {{ item.roomTitle }}</span>
-          <span>Tip: {{ item.type }}</span>
-          <span *ngIf="item.sicaklik !== undefined">Sıcaklık: {{ item.sicaklik }}</span>
-          <span *ngIf="item.nem !== undefined">Nem: {{ item.nem }}</span>
-        </div>
-
-        <div class="sensor-alert-message">
-          {{ item.message }}
-        </div>
-
-        <div class="sensor-alert-time">
-          {{ item.updatedAt }}
-        </div>
-      </div>
-    </div>
-
-    <ng-template #noFaultySensors>
-      <div class="sensor-alert-empty">
-        Şu anda hatalı sensör bulunmuyor.
-      </div>
-    </ng-template>
-  </aside>
-</div> -->
 
 <aside class="sensor-alert-panel">
   <div class="sensor-alert-header">
     <h3>ODALARIN KRİTİKLİKLERİ</h3>
     <div class="sensor-summary-bar">
-      <span class="summary-pill warning">
+      <span class="summary-pill warning"
+        [class.blink-warning]="warningRoomCount > 0"
+        >
         Uyarı: {{ warningRoomCount }}
       </span>
-      <span class="summary-pill critical">
+      <span class="summary-pill critical"
+      [class.blink-critical]="criticalRoomCount > 0"
+      >
         Kritik: {{ criticalRoomCount }}
       </span>
       <span class="summary-pill alert-count" *ngIf="problematicRooms.length > 0">
@@ -147,8 +91,31 @@
       </div>
 
       <div class="sensor-alert-meta">
-        <span *ngIf="room.avgTemperature != null">Ortalama Sıcaklık: {{ room.avgTemperature | number:'1.1-1' }}</span>
-        <span *ngIf="room.avgHumidity != null">Ortalama Nem: {{ room.avgHumidity | number:'1.1-1' }}</span>
+        <div class="room-thresholds">
+          <span *ngIf="room.temperature_min_value != null">
+            Minimum Sıcaklık: {{ room.temperature_min_value }}
+          </span>
+          <span *ngIf="room.temperature_optimum_value != null">
+            Optimum sıcaklık: {{ room.temperature_optimum_value }}
+          </span>
+          <span *ngIf="room.temperature_max_value != null">
+            Maksimum Sıcaklık: {{ room.temperature_max_value }}
+          </span>
+          <span *ngIf="room.avgTemperature != null">Ortalama Sıcaklık: {{ room.avgTemperature | number:'1.1-1' }}</span>
+        </div>
+        <div class="room-thresholds">
+          <span *ngIf="room.humidity_min_value != null">
+            Minimum nem: {{ room.humidity_min_value }}
+          </span>
+          <span *ngIf="room.humidity_optimum_value != null">
+            Optimum nem: {{ room.humidity_optimum_value }}
+          </span>
+          <span *ngIf="room.humidity_max_value != null">
+            Maksimum nem: {{ room.humidity_max_value }}
+          </span>
+          <span *ngIf="room.avgHumidity != null">Ortalama Nem: {{ room.avgHumidity | number:'1.1-1' }}</span>
+        </div>
+        
       </div>
 
       <div class="sensor-alert-message">
@@ -203,7 +170,7 @@
   [style.left.px]="posX"
   [style.top.px]="posY"
 >
-  <!-- <span class="origin-label">0,0</span> -->
+  
 </div>
     <div
       class="content"

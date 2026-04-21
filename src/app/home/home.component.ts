@@ -125,7 +125,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   title = 'sketch_frontend';
 
   scale = 1;
-  readonly minScale = 0.5;
+  readonly minScale = 0.65;
   readonly maxScale = 2;
   readonly zoomStep = 0.025;
 
@@ -140,10 +140,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   containerWidth = 0;
   containerHeight = 0;
-
-  // @ViewChild('container', { static: true }) containerRef!: ElementRef<HTMLDivElement>;
-
-  
 
   posX = 0;
   posY = 0;
@@ -1462,6 +1458,43 @@ openDeleteRoomModal(): void {
   this.sensorDeleteModalOpen = true;
 }
 
+// onBuildingSave(formValue: BuildingFormValue): void {
+//   const payload: CreateBuildingRequest = {
+//     title: String(formValue.title ?? '').trim(),
+//     city: String(formValue.city ?? '').trim(),
+//     county: String(formValue.county ?? '').trim(),
+//     postcode: String(formValue.postcode ?? '').trim(),
+//     address: String(formValue.address ?? '').trim()
+//   };
+
+//   this.buildingApiService.createBuilding(payload).subscribe({
+//     next: (createdBuilding: any) => {
+//       this.buildingModalOpen = false;
+//       this.buildingFormData = this.createEmptyBuildingForm();
+
+//       const newBuildingId =
+//         createdBuilding?.id ?? createdBuilding?.response?.id ?? null;
+
+//       this.loadBuildings();
+
+//       if (newBuildingId !== null) {
+//         this.currentBuildingId = newBuildingId;
+//         this.selectedFloorNumber = 0;
+
+//         this.floors = [{ floor_number: 0 }];
+
+//         this.loadFloorsByBuilding(newBuildingId);
+//         this.loadRooms(newBuildingId, 0);
+//       }
+//     },
+//     error: (error: any) => {
+//       console.error('Bina kaydedilemedi:', error);
+//       this.openAlert(error?.error?.message ?? 'Bina kaydedilemedi.');
+//     }
+//   });
+// }
+
+
 onBuildingSave(formValue: BuildingFormValue): void {
   const payload: CreateBuildingRequest = {
     title: String(formValue.title ?? '').trim(),
@@ -1479,13 +1512,22 @@ onBuildingSave(formValue: BuildingFormValue): void {
       const newBuildingId =
         createdBuilding?.id ?? createdBuilding?.response?.id ?? null;
 
-      this.loadBuildings();
+      const newBuilding =
+        createdBuilding?.response ?? createdBuilding ?? null;
+
+      if (newBuilding) {
+        this.buildings = [...this.buildings, newBuilding];
+      } else {
+        this.loadBuildings();
+      }
 
       if (newBuildingId !== null) {
         this.currentBuildingId = newBuildingId;
         this.selectedFloorNumber = 0;
 
         this.floors = [{ floor_number: 0 }];
+        this.rooms = [];
+        this.sensors = [];
 
         this.loadFloorsByBuilding(newBuildingId);
         this.loadRooms(newBuildingId, 0);
@@ -1497,6 +1539,7 @@ onBuildingSave(formValue: BuildingFormValue): void {
     }
   });
 }
+
 
 onFloorSave(formValue: FloorFormValue): void {
   if (this.buildings.length === 0) {
@@ -1784,7 +1827,21 @@ getSensorIcon(sensor: SensorViewModel): string {
   }
 }
 
-onBuildingChange(buildingId: number): void {
+// onBuildingChange(buildingId: number): void {
+//   this.currentBuildingId = buildingId;
+
+//   console.log('currentBuildingId:', this.currentBuildingId);
+//   console.log('floors:', this.floors);
+
+//   this.selectedFloorNumber = null;
+//   this.rooms = [];
+//   this.sensors = [];
+//   this.floors = [];
+
+//   this.loadFloorsByBuilding(buildingId);
+// }
+
+onBuildingChange(buildingId: number | null, autoSelectFirstFloor = false): void {
   this.currentBuildingId = buildingId;
 
   console.log('currentBuildingId:', this.currentBuildingId);
@@ -1795,7 +1852,17 @@ onBuildingChange(buildingId: number): void {
   this.sensors = [];
   this.floors = [];
 
+  if (buildingId === null) {
+    return;
+  }
+
   this.loadFloorsByBuilding(buildingId);
+
+  if (autoSelectFirstFloor) {
+    this.selectedFloorNumber = 0;
+    this.floors = [{ floor_number: 0 }];
+    this.loadRooms(buildingId, 0);
+  }
 }
 
 onFloorChange(floorNumber: number): void {
@@ -3629,6 +3696,8 @@ private refreshRoomStatuses(): void {
   });
 
   this.rebuildRoomHierarchy();
+  this.rebuildRoomHierarchy();
+  this.notifyIfRoomStatusIncreased();
 }
 
 
@@ -3734,6 +3803,22 @@ viewModelToSensor(sensor: SensorViewModel): Sensor {
       height: 1
     },
   };
+}
+
+
+lastWarningRoomCount = 0;
+lastCriticalRoomCount = 0;
+
+
+private notifyIfRoomStatusIncreased(): void {
+  if (this.criticalRoomCount > this.lastCriticalRoomCount) {
+    this.openAlert('Kritik durumda oda tespit edildi!', 'Kritik Uyarı');
+  } else if (this.warningRoomCount > this.lastWarningRoomCount) {
+    this.openAlert('Uyarı durumunda oda tespit edildi!', 'Uyarı');
+  }
+
+  this.lastWarningRoomCount = this.warningRoomCount;
+  this.lastCriticalRoomCount = this.criticalRoomCount;
 }
 
 }

@@ -283,11 +283,23 @@ onRoomChange(roomId: number | null): void {
     }
 
     this.sensorDataApiService.getLatestByRoomId(this.selectedRoomId).subscribe({
+      // next: (data) => {
+      //   this.roomLatestData = data;
+      //   this.calculateRoomAverages(data);
+      //   this.loading = false;
+      // },
       next: (data) => {
-        this.roomLatestData = data;
-        this.calculateRoomAverages(data);
-        this.loading = false;
-      },
+  const activeSensorIds = this.getActiveSensorIdsForSelectedRoom();
+  const filteredData = data.filter(item => activeSensorIds.has(item.sensor_id));
+
+  console.log('roomLatest raw:', data);
+  console.log('visibleSensors:', this.visibleSensors);
+  console.log('roomLatest filtered:', filteredData);
+
+  this.roomLatestData = filteredData;
+  this.calculateRoomAverages(filteredData);
+  this.loading = false;
+},
       error: () => this.finishWithError('Odaya ait son veriler alınamadı.')
     });
   }
@@ -299,10 +311,21 @@ onRoomChange(roomId: number | null): void {
     }
 
     this.sensorDataApiService.getByRoomId(this.selectedRoomId, this.limit).subscribe({
+      // next: (data) => {
+      //   this.roomHistoryData = data;
+      //   this.loading = false;
+      // },
       next: (data) => {
-        this.roomHistoryData = data;
-        this.loading = false;
-      },
+  const activeSensorIds = this.getActiveSensorIdsForSelectedRoom();
+  const filteredData = data.filter(item => activeSensorIds.has(item.sensor_id));
+
+  console.log('roomHistory raw:', data);
+  console.log('visibleSensors:', this.visibleSensors);
+  console.log('roomHistory filtered:', filteredData);
+
+  this.roomHistoryData = filteredData;
+  this.loading = false;
+},
       error: () => this.finishWithError('Odaya ait geçmiş veriler alınamadı.')
     });
   }
@@ -375,23 +398,49 @@ onRoomChange(roomId: number | null): void {
     });
   }
 
+  // private calculateRoomAverages(data: SensorDataItem[]): void {
+  //   const tempValues = data
+  //     .map((item) => Number(item.sicaklik))
+  //     .filter((value): value is number => typeof value === 'number');
+
+  //   const humidityValues = data
+  //     .map((item) => Number(item.nem))
+  //     .filter((value): value is number => typeof value === 'number');
+
+  //   this.roomAverageTemp = tempValues.length
+  //     ? tempValues.reduce((sum, value) => sum + value, 0) / tempValues.length
+  //     : null;
+
+  //   this.roomAverageHumidity = humidityValues.length
+  //     ? humidityValues.reduce((sum, value) => sum + value, 0) / humidityValues.length
+  //     : null;
+  // }
+
   private calculateRoomAverages(data: SensorDataItem[]): void {
-    const tempValues = data
-      .map((item) => Number(item.sicaklik))
-      .filter((value): value is number => typeof value === 'number');
+  const tempValues = data
+    .map((item) =>
+      item.sicaklik !== null && item.sicaklik !== undefined
+        ? Number(item.sicaklik)
+        : null
+    )
+    .filter((value): value is number => value !== null && !Number.isNaN(value));
 
-    const humidityValues = data
-      .map((item) => Number(item.nem))
-      .filter((value): value is number => typeof value === 'number');
+  const humidityValues = data
+    .map((item) =>
+      item.nem !== null && item.nem !== undefined
+        ? Number(item.nem)
+        : null
+    )
+    .filter((value): value is number => value !== null && !Number.isNaN(value));
 
-    this.roomAverageTemp = tempValues.length
-      ? tempValues.reduce((sum, value) => sum + value, 0) / tempValues.length
-      : null;
+  this.roomAverageTemp = tempValues.length
+    ? tempValues.reduce((sum, value) => sum + value, 0) / tempValues.length
+    : null;
 
-    this.roomAverageHumidity = humidityValues.length
-      ? humidityValues.reduce((sum, value) => sum + value, 0) / humidityValues.length
-      : null;
-  }
+  this.roomAverageHumidity = humidityValues.length
+    ? humidityValues.reduce((sum, value) => sum + value, 0) / humidityValues.length
+    : null;
+}
 
   private loadBuildings(): void {
     this.buildingApiService.getBuildings().subscribe({
@@ -543,5 +592,16 @@ cancelDeleteOldData(): void {
   this.confirmDeleteModalOpen = false;
   this.pendingDeleteOlderThanTs = null;
 }
+
+getSensorTitle(sensorId: number): string {
+  const sensor = this.visibleSensors.find((s) => s.id === sensorId);
+  return sensor?.title ?? `Sensör ${sensorId}`;
+}
+
+
+private getActiveSensorIdsForSelectedRoom(): Set<number> {
+  return new Set(this.visibleSensors.map(sensor => sensor.id));
+}
+
 
 }

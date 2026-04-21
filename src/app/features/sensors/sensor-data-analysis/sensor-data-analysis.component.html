@@ -134,7 +134,8 @@
     <table>
       <thead>
         <tr>
-          <th>Sensör Id</th>
+          <!-- <th>Sensör Id</th> -->
+          <th>Sensör Adı</th>
           <th>Sıcaklık</th>
           <th>Nem</th>
           <th>Zaman</th>
@@ -142,7 +143,8 @@
       </thead>
       <tbody>
         <tr *ngFor="let item of roomLatestData">
-          <td>{{ item.sensor_id }}</td>
+          <!-- <td>{{ item.sensor_id }}</td> -->
+          <td>{{ getSensorTitle(item.sensor_id) }}</td>
           <td>{{ item.sicaklik }}</td>
           <td>{{ item.nem }}</td>
           <td>{{ formatTimestamp(item.timestamp) }}</td>
@@ -156,7 +158,8 @@
     <table>
       <thead>
         <tr>
-          <th>Sensör Id</th>
+          <th>Sensör Adı</th>
+          <!-- <th>Sensör Id</th> -->
           <th>Sıcaklık</th>
           <th>Nem</th>
           <th>Zaman</th>
@@ -164,7 +167,8 @@
       </thead>
       <tbody>
         <tr *ngFor="let item of roomHistoryData">
-          <td>{{ item.sensor_id }}</td>
+          <!-- <td>{{ item.sensor_id }}</td> -->
+          <td>{{ getSensorTitle(item.sensor_id) }}</td>
           <td>{{ item.sicaklik }}</td>
           <td>{{ item.nem }}</td>
           <td>{{ formatTimestamp(item.timestamp) }}</td>
