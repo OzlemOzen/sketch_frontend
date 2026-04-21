@@ -1191,3 +1191,126 @@ button {
   position: relative;
   z-index: 1;
 }
+
+/*
+.origin-marker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+*/
+
+.sketch {
+  position: relative;
+}
+
+.origin-marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3000;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.25);
+}
+
+.origin-label {
+  position: absolute;
+  top: -28px;
+  left: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #ef4444;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+
+.ruler {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  z-index: 2500;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+// .ruler-x {
+//   top: 0;
+//   left: 32px;
+//   right: 0;
+//   height: 28px;
+//   border-bottom: 1px solid #cbd5e1;
+// }
+
+// .ruler-y {
+//   top: 28px;
+//   left: 0;
+//   bottom: 0;
+//   width: 32px;
+//   border-right: 1px solid #cbd5e1;
+// }
+
+.ruler-x {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 28px;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.ruler-y {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 32px;
+  border-right: 1px solid #cbd5e1;
+}
+
+.ruler-tick {
+  position: absolute;
+}
+
+.ruler-x .ruler-tick {
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: #94a3b8;
+}
+
+.ruler-y .ruler-tick {
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: #94a3b8;
+}
+
+.ruler-x .ruler-label {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  font-size: 8px;
+  color: #334155;
+  white-space: nowrap;
+}
+
+.ruler-y .ruler-label {
+  position: absolute;
+  top: -6px;
+  left: 4px;
+  font-size: 8px;
+  color: #334155;
+  white-space: nowrap;
+}

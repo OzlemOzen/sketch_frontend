@@ -179,6 +179,32 @@
     [style.background-size]="gridSize + 'px ' + gridSize + 'px'"
     [style.background-position]="posX + 'px ' + posY + 'px'"
   >
+  <div class="ruler ruler-x">
+  <div
+    class="ruler-tick"
+    *ngFor="let tick of horizontalRulerTicks; trackBy: trackByRulerTick"
+    [style.left.px]="tick.position"
+  >
+    <span class="ruler-label">{{ tick.value }}</span>
+  </div>
+</div>
+
+<div class="ruler ruler-y">
+  <div
+    class="ruler-tick"
+    *ngFor="let tick of verticalRulerTicks; trackBy: trackByRulerTick"
+    [style.top.px]="tick.position"
+  >
+    <span class="ruler-label">{{ tick.value }}</span>
+  </div>
+</div>
+  <div
+  class="origin-marker"
+  [style.left.px]="posX"
+  [style.top.px]="posY"
+>
+  <!-- <span class="origin-label">0,0</span> -->
+</div>
     <div
       class="content"
       [style.transform]="'translate(' + posX + 'px,' + posY + 'px) scale(' + scale + ')'"

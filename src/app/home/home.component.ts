@@ -28,7 +28,8 @@ import {
   ElementRef,
   AfterViewInit,
   OnInit,
-  OnDestroy
+  OnDestroy,
+  HostListener
 } from '@angular/core';
 import { ChangeDetectorRef } from '@angular/core';
 
@@ -58,6 +59,12 @@ import {
 import { FloorFormValue } from '../features/floors/floor-form/floor-form.component';
 import { SensorFormValue } from '../features/sensors/sensor-form/sensor-form.component';
 import { BuildingFormValue } from '../features/buildings/building-form/building-form.component';
+
+interface RulerTick {
+  position: number;
+  value: number;
+}
+
 
 interface FaultySensorItem {
   sensorId: number;
@@ -118,9 +125,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   title = 'sketch_frontend';
 
   scale = 1;
-  readonly minScale = 0.3;
-  readonly maxScale = 3;
-  readonly zoomStep = 0.05;
+  readonly minScale = 0.5;
+  readonly maxScale = 2;
+  readonly zoomStep = 0.025;
 
   baseGridSize = 50;
   gridSize = 50;
@@ -133,6 +140,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   containerWidth = 0;
   containerHeight = 0;
+
+  // @ViewChild('container', { static: true }) containerRef!: ElementRef<HTMLDivElement>;
+
+  
 
   posX = 0;
   posY = 0;
@@ -715,6 +726,20 @@ ngOnDestroy(): void {
   }
 }
 
+private updateContainerSize(): void {
+  if (!this.container?.nativeElement) {
+    return;
+  }
+
+  this.containerWidth = this.container.nativeElement.clientWidth;
+  this.containerHeight = this.container.nativeElement.clientHeight;
+}
+
+trackByRulerTick(index: number, tick: RulerTick): number {
+  return tick.value;
+}
+
+
   ngAfterViewInit(): void {
     const rect = this.container.nativeElement.getBoundingClientRect();
 
@@ -725,6 +750,7 @@ ngOnDestroy(): void {
     this.posY = this.containerHeight / 2;
 
     this.cd.detectChanges();
+    this.updateContainerSize();
   }
 
   createEmptyBuildingForm(): BuildingFormValue {
@@ -1166,6 +1192,87 @@ private hasInvalidRoomPlacementForUpdate(
     this.posX = mouseX - worldX * this.scale;
     this.posY = mouseY - worldY * this.scale;
   }
+
+
+get horizontalRulerTicks(): RulerTick[] {
+  const ticks: RulerTick[] = [];
+  const step = this.gridSize;
+
+  if (!this.containerWidth || step <= 0) {
+    return ticks;
+  }
+
+  const startIndex = Math.floor(-this.posX / step) - 2;
+  const endIndex = Math.ceil((this.containerWidth - this.posX) / step) + 2;
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    ticks.push({
+      position: this.posX + i * step,
+      value: i * this.baseGridSize
+    });
+  }
+
+  return ticks;
+}
+
+get verticalRulerTicks(): RulerTick[] {
+  const ticks: RulerTick[] = [];
+  const step = this.gridSize;
+
+  if (!this.containerHeight || step <= 0) {
+    return ticks;
+  }
+
+  const startIndex = Math.floor(-this.posY / step) - 2;
+  const endIndex = Math.ceil((this.containerHeight - this.posY) / step) + 2;
+
+  for (let i = startIndex; i <= endIndex; i++) {
+    ticks.push({
+      position: this.posY + i * step,
+      value: -i * this.baseGridSize
+    });
+  }
+
+  return ticks;
+}
+
+@HostListener('window:resize')
+onWindowResize(): void {
+  this.updateContainerSize();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   openAddBuildingModal(): void {
     this.buildingFormData = this.createEmptyBuildingForm();
