@@ -100,8 +100,4 @@ focusNext(event: Event): void {
      }
    }
 
-
-// isCameraSensor(): boolean {
-//   return (this.formData.type ?? '').trim().toLowerCase().includes('kamera');
-// }
 }

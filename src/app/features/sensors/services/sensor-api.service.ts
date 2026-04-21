@@ -44,8 +44,4 @@ export class SensorApiService {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
-
-  ////////////////////
-
-
 }

@@ -1,122 +1,16 @@
-// /* Form düzeni */
-// .form-group {
-//   display: flex;
-//   flex-direction: column;
-//   margin-bottom: 15px;
-// }
-
-// /* Label */
-// .form-group label {
-//   font-size: 14px;
-//   font-weight: 600;
-//   margin-bottom: 6px;
-//   color: #374151;
-// }
-
-// /* Input */
-// .form-group input {
-//   width: 100%;
-//   padding: 10px;
-//   border: 1px solid #d1d5db;
-//   border-radius: 8px;
-//   font-size: 14px;
-//   transition: 0.2s ease;
-//   background: #f9fafb;
-// }
-
-// .form-group input:focus {
-//   outline: none;
-//   border-color: #2563eb;
-//   background: white;
-//   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-// }
-
-// .form-group select {
-//   width: 100%;
-//   padding: 10px;
-//   border: 1px solid #d1d5db;
-//   border-radius: 8px;
-//   font-size: 14px;
-//   transition: 0.2s ease;
-//   background: #f9fafb;
-// }
-
-// /* Buton alanı */
-// .modal-actions {
-//   display: flex;
-//   justify-content: flex-end;
-//   gap: 10px;
-//   margin-top: 20px;
-// }
-
-// /* Butonlar */
-// .save-button,
-// .cancel-button {
-//   border: none;
-//   padding: 10px 16px;
-//   border-radius: 8px;
-//   font-size: 14px;
-//   cursor: pointer;
-//   font-weight: 600;
-//   transition: 0.2s ease;
-// }
-
-// /* Kaydet */
-// .save-button {
-//   background-color: #16a34a;
-//   color: white;
-// }
-
-// .save-button:hover {
-//   background-color: #15803d;
-// }
-
-// /* İptal */
-// .cancel-button {
-//   background-color: #ef4444;
-//   color: white;
-// }
-
-// .cancel-button:hover {
-//   background-color: #dc2626;
-// }
-
-// /* Açılma animasyonu */
-// @keyframes fadeIn {
-//   from {
-//     opacity: 0;
-//     transform: translateY(-10px) scale(0.97);
-//   }
-//   to {
-//     opacity: 1;
-//     transform: translateY(0) scale(1);
-//   }
-// }
-
-
-/* Başlık */
-// .formTitle h2 {
-//   text-align: center;
-//   color: rgb(245, 130, 34);
-//   margin-bottom: 20px;
-//   border-bottom: 2px solid #e5e7eb;
-//   padding-bottom: 8px;
-// }
-
-
 .form {
   display: flex;
   flex-direction: column;
-  gap: 18px;           /* Dikey eşit mesafe */
-  padding: 0 16px;     /* Sağ-sol eşit boşluk */
+  gap: 18px;           
+  padding: 0 16px;     
   box-sizing: border-box;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;            /* Label ile input arası */
-  margin: 0;           /* Fazladan düzensiz boşlukları kaldır */
+  gap: 8px;            
+  margin: 0;           
 }
 
 .form-group label {
@@ -145,32 +39,6 @@
   padding-bottom: 4px;
 }
 
-// /* Form düzeni */
-// .form-group {
-//   display: flex;
-//   flex-direction: column;
-//   margin-bottom: 15px;
-// }
-
-// /* Label */
-// .form-group label {
-//   font-size: 14px;
-//   font-weight: 600;
-//   margin-bottom: 6px;
-//   color: #374151;
-// }
-
-// /* Input */
-// .form-group input {
-//   width: 100%;
-//   padding: 10px;
-//   border: 1px solid #d1d5db;
-//   border-radius: 8px;
-//   font-size: 14px;
-//   transition: 0.2s ease;
-//   background: #f9fafb;
-// }
-
 .form-group input:focus {
   outline: none;
   border-color: #2563eb;
@@ -178,7 +46,6 @@
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-/* Buton alanı */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -186,7 +53,6 @@
   margin-top: 20px;
 }
 
-/* Butonlar */
 .save-button,
 .cancel-button {
   border: none;
@@ -198,7 +64,6 @@
   transition: 0.2s ease;
 }
 
-/* Kaydet */
 .save-button {
   background-color: #16a34a;
   color: white;
@@ -208,7 +73,6 @@
   background-color: #15803d;
 }
 
-/* İptal */
 .cancel-button {
   background-color: #ef4444;
   color: white;
@@ -218,7 +82,6 @@
   background-color: #dc2626;
 }
 
-/* Açılma animasyonu */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -229,7 +92,6 @@
     transform: translateY(0) scale(1);
   }
 }
-
 
 .metric-group {
   margin-top: 20px;

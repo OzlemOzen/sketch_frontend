@@ -10,5 +10,11 @@ export const routes: Routes = [
   {
     path: 'sensor-monitor',
     component: SensorMonitorComponent
-  }
+  },
+  {
+  path: 'sensor-data-analysis',
+  loadComponent: () =>
+    import('./features/sensors/sensor-data-analysis/sensor-data-analysis.component')
+      .then((m) => m.SensorDataAnalysisComponent)
+}
 ];

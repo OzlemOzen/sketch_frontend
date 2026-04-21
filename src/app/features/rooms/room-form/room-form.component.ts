@@ -1,69 +1,3 @@
-// import { Component , Input, Output, EventEmitter} from '@angular/core';
-// import { Building } from 'src/app/models/data';
-
-// export interface RoomFormValue {
-//   title: string;
-//   floorNumber: number | null;
-//   buildingId: number | null;
-//   x: number | null;
-//   y: number | null;
-//   width: number | null;
-//   height: number | null;
-// }
-
-// @Component({
-//   selector: 'app-room-form',
-//   templateUrl: './room-form.component.html',
-//   styleUrls: ['./room-form.component.scss'],
-//   standalone: false
-// })
-
-// export class RoomFormComponent {
-//   @Input() submitLabel = 'Kaydet';
-  
-//   @Input() buildings: Building[] = [];
-//   @Input() floors: { floor_number: number }[] = [];
-
-//   @Input() formData: RoomFormValue = {
-//     title: '',
-//     roomBuilding: '',
-//     roomFloor: null,
-//     x: null,
-//     y: null,
-//     width: null,
-//     height: null
-//   };
-  
-//   @Output() save = new EventEmitter<RoomFormValue>();
-//   @Output() cancel = new EventEmitter();
-
-//   onSubmit(): void{
-//     const data: RoomFormValue = {
-//         title: this.formData.title.trim(),
-//         roomBuilding: this.formData.roomBuilding,
-//         roomFloor: this.formData.roomFloor,
-//         x: this.formData.x,
-//         y: this.formData.y,
-//         width: this.formData.width,
-//         height: this.formData.height
-//     };
-
-//     if(
-//         data.title &&
-//         data.roomBuilding &&
-//         data.roomFloor &&
-//         data.x !== null &&
-//         data.y !== null &&
-//         data.width !== null &&
-//         data.height !== null
-//     ) {
-//         this.save.emit(data);
-//     }else{
-//         console.log("room-form eksik");
-//     }
-//   }
-// }
-
 import { FormsModule } from '@angular/forms';
 import { RoomFormValue } from '../models/room-form-value.model';
 import { CommonModule } from '@angular/common';
@@ -75,7 +9,6 @@ import {
   Input,
   Output,
   ViewChild,
-  OnChanges,
   SimpleChanges
 } from '@angular/core';
 import { NgForm } from '@angular/forms';

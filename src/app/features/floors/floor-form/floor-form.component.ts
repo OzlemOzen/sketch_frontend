@@ -12,10 +12,9 @@
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
- export interface FloorFormValue{
-     floor_number: number| null;
- }
-
+export interface FloorFormValue{
+  floor_number: number| null;
+}
 
  @Component({
    selector: 'app-floor-form',
@@ -44,13 +43,10 @@ import { NgForm } from '@angular/forms';
             });
         }
     }
-     
-
     focusNext(event: Event): void {
-  event.preventDefault();
-
-  const current = event.target as HTMLElement;
-  const form = current.closest('form');
+      event.preventDefault();
+      const current = event.target as HTMLElement;
+      const form = current.closest('form');
 
   if (!form) {
     return;

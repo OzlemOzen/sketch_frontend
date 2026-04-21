@@ -4,17 +4,6 @@ import { AppComponent } from './app.component';
 import { SensorMonitorComponent } from './features/sensors/sensor-monitor/sensor-monitor.component';
 import { HomeComponent } from './home/home.component';
 
-// export const routes: Routes = [
-//   {
-//     path: '',
-//     component: HomeComponent
-//   },
-//   {
-//     path: 'sensor-monitor',
-//     component: SensorMonitorComponent
-//   }
-// ];
-
 const routes: Routes = [
   {
     path: '',

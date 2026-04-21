@@ -165,25 +165,7 @@ export interface RoomViewModel {
   humidity_min_value: number;
   humidity_max_value: number;
   humidity_optimum_value: number;
-  // statusColor?: 'normal' | 'warning' | 'critical' | 'unknown';
-  // avgTemperature?: number | null;
-  // avgHumidity?: number | null;
 }
-
-// export interface SensorViewModel {
-//   id?: number;
-//   title: string;
-//   type: string;
-//   room_id: number;
-//   coordinate_id?: number;
-//   floor_number?: number;
-//   x: number;
-//   y: number;
-//   optimum_value: number;
-//   min_value: number;
-//   max_value: number
-// }
-
 
 export interface SensorViewModel {
   id: number;
@@ -202,30 +184,6 @@ export interface SensorViewModel {
   current_value?: number | null;
   statusColor?: 'green' | 'yellow' | 'red' | 'unknown';
 }
-
-// export interface FaultySensorItem {
-//   sensorId: number;
-//   title: string;
-//   roomTitle: string;
-//   type: string;
-//   status: 'green' | 'yellow' | 'red' | 'unknown';
-//   statusText: string;
-//   message: string;
-//   updatedAt: string;
-// }
-
-// export interface FaultySensorItem {
-//   sensorId: number;
-//   title: string;
-//   buildingTitle: string;
-//   floorNumber: number | string;
-//   roomTitle: string;
-//   type: string;
-//   status: 'warning' | 'critical' | 'offline';
-//   statusText: string;
-//   message: string;
-//   updatedAt: string;
-// }
 
 export interface FaultySensorItem {
   sensorId: number;

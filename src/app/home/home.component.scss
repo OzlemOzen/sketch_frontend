@@ -75,7 +75,6 @@ $grid-color: #d1d5db;
 .container {
   width: min(96vw, 1900px);
   height: 75vh;
-  // height: 650px;
   overflow: hidden;
   cursor: grab;
   border: 1px solid #111827;
@@ -479,8 +478,8 @@ title{
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 0 16px 18px 16px; /* inputlarla aynı sağ-sol boşluk */
-  padding: 0;               /* kart görüntüsünü kaldır */
+  margin: 0 16px 18px 16px; 
+  padding: 0;               
   border: none;
   background: transparent;
   box-shadow: none;
@@ -495,10 +494,10 @@ title{
 
 .popup-select {
   width: 100%;
-  height: 42px;             /* input ile aynı yükseklik */
-  padding: 0 12px;          /* input ile aynı iç boşluk */
+  height: 42px;             
+  padding: 0 12px;          
   border: 1px solid #d1d5db;
-  border-radius: 8px;       /* input ile aynı radius */
+  border-radius: 8px;       
   font-size: 14px;
   color: #111827;
   background: #f9fafb;
@@ -701,7 +700,6 @@ title{
 }
 
 .selector-input {
-  // min-width: 170px;
   width: 180px;
   height: 42px;
   padding: 0 14px;
@@ -799,13 +797,6 @@ title{
   color: #991b1b;
 }
 
-// .sensor-unknown {
-//   background-color: rgba(148, 163, 184, 0.16);
-//   border-color: #94a3b8;
-//   color: #475569;
-// }
-
-
 .sensor-summary-bar {
   display: flex;
   flex-wrap: wrap;
@@ -874,9 +865,7 @@ title{
 
 
 /////////////////////////////////////////////
-/// 
 
-/* Üst seçim alanı + sensör paneli */
 .top-bar {
   display: flex;
   gap: 16px;
@@ -911,7 +900,6 @@ title{
   width: 100%;
 }
 
-/* Hatalı sensör kartları */
 .sensor-alert-card-top,
 .sensor-alert-meta {
   display: flex;
@@ -925,7 +913,6 @@ title{
   word-break: break-word;
 }
 
-/* Kroki alanı */
 .container {
   width: 100%;
   min-height: 420px;
@@ -938,7 +925,6 @@ title{
   min-height: 600px;
 }
 
-/* Form elemanları taşmasın */
 input,
 select,
 textarea,
@@ -946,7 +932,6 @@ button {
   max-width: 100%;
 }
 
-/* Tablet */
 @media (max-width: 1024px) {
   .top-bar {
     flex-direction: column;
@@ -958,7 +943,6 @@ button {
   }
 }
 
-/* Küçük tablet */
 @media (max-width: 768px) {
   .navbar {
     flex-direction: column;
@@ -999,7 +983,6 @@ button {
   }
 }
 
-/* Telefon */
 @media (max-width: 480px) {
   .navbar-title {
     font-size: 24px;
@@ -1026,7 +1009,6 @@ button {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/* Genel güvenli ayarlar */
 * {
   box-sizing: border-box;
 }
@@ -1057,7 +1039,6 @@ button {
   min-width: 900px;
 }
 
-/* NAVBAR */
 .navbar {
   background: rgb(2, 47, 138);
   display: flex;
@@ -1094,7 +1075,6 @@ button {
   min-height: 40px;
 }
 
-/* Tablet ve altı */
 @media (max-width: 768px) {
   .navbar {
     padding: 14px 16px;
@@ -1114,7 +1094,6 @@ button {
   }
 }
 
-/* Telefon */
 @media (max-width: 480px) {
   .navbar {
     padding: 12px;
@@ -1171,29 +1150,7 @@ button {
   color: #334155;
 }
 
-/*
-.restrictedRoom.restrictedRoom-normal {
-  background-color: rgba(34, 197, 94, 0.18);
-  border: 2px solid #22c55e;
-}
-
-.restrictedRoom.restrictedRoom-warning {
-  background-color: rgba(234, 179, 8, 0.18);
-  border: 2px solid #eab308;
-}
-
-.restrictedRoom.restrictedRoom-critical {
-  background-color: rgba(239, 68, 68, 0.18);
-  border: 2px solid #ef4444;
-}
-
-.restrictedRoom.restrictedRoom-unknown {
-  background-color: rgba(148, 163, 184, 0.10);
-  border: 2px solid #94a3b8;
-}
-  */
-
-  .restrictedRoom.restrictedRoom-normal::before {
+.restrictedRoom.restrictedRoom-normal::before {
   background: #dcfce7;
   border: 2px solid #22c55e;
 }

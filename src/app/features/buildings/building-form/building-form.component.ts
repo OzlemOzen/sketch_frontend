@@ -33,14 +33,6 @@ export class BuildingFormComponent {
 
     @Input() submitLabel = "Kaydet";
 
-    // @Input() formData: BuildingFormValue = {
-    //     title: '',
-    //     city: '',
-    //     county: '',
-    //     postcode: '',
-    //     address: '',
-    // };
-
     @Input() formData: BuildingFormValue = {
         title: '',
         city: '',
@@ -84,32 +76,7 @@ export class BuildingFormComponent {
   }
 }
 
-    // onSubmit(): void {
-
-    //     console.log('Building submit çalıştı');
-    //     console.log('building formData:', this.formData);
-
-    //     const data: BuildingFormValue = {
-    //         title: String(this.formData.title ?? '').trim(),
-    //         city: String(this.formData.city ?? '').trim(),
-    //         county: String(this.formData.county ?? '').trim(),
-    //         postcode: String(this.formData.postcode ?? '').trim(),
-    //         address: String(this.formData.address ?? '').trim()
-    //     };
-    //     if (
-    //         data.title &&
-    //         data.city &&
-    //         data.county &&
-    //         data.postcode &&
-    //         data.address
-    //     ) {
-    //         this.save.emit(data);
-    //     } else {
-    //         console.log('Form eksik veya hatalı');
-    //     }
-    // }
-
-    onSubmit(): void {
+  onSubmit(): void {
   console.log('Building submit çalıştı');
   console.log('building formData:', this.formData);
   

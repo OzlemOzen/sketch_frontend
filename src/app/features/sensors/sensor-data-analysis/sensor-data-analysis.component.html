@@ -1,0 +1,285 @@
+<section class="analysis-page">
+  <div class="analysis-header">
+    <h1>VERİLER</h1>
+  </div>
+
+  <div class="filter-panel">
+    <div class="form-group">
+      <label>Bina</label>
+      <select [(ngModel)]="selectedBuildingId" (ngModelChange)="onBuildingChange($event)">
+        <option [ngValue]="null">Bina seçiniz</option>
+        <option *ngFor="let building of buildings" [ngValue]="building.id">
+          {{ building.title }}
+        </option>
+      </select>
+    </div>
+
+    <!-- <div class="form-group">
+        <label>Kat</label>
+        <select [(ngModel)]="selectedFloorNumber" (ngModelChange)="onFloorChange()">
+            <option [ngValue]="null">Tüm katlar</option>
+            <option *ngFor="let floor of availableFloors" [ngValue]="floor">
+                Kat {{ floor }}
+            </option>
+        </select>
+    </div>
+
+    <div class="form-group">
+      <label>Oda</label>
+      <select [(ngModel)]="selectedRoomId" (ngModelChange)="onRoomChange($event)">
+        <option [ngValue]="null">Oda seçiniz</option>
+        <option *ngFor="let room of visibleRooms" [ngValue]="room.id">
+          {{ room.title }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Sensör</label>
+      <select [(ngModel)]="selectedSensorId" (ngModelChange)="onSensorChange($event)">
+        <option [ngValue]="null">Sensör seçiniz</option>
+        <option *ngFor="let sensor of visibleSensors" [ngValue]="sensor.id">
+          {{ sensor.title }}
+        </option>
+      </select>
+    </div> -->
+
+    <div class="form-group">
+  <label>Kat</label>
+  <select
+    [(ngModel)]="selectedFloorNumber"
+    (ngModelChange)="onFloorChange()"
+    [disabled]="isFloorDisabled"
+  >
+    <option [ngValue]="null">{{ floorPlaceholder }}</option>
+    <option *ngFor="let floor of availableFloors" [ngValue]="floor">
+      Kat {{ floor }}
+    </option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label>Oda</label>
+  <select
+    [(ngModel)]="selectedRoomId"
+    (ngModelChange)="onRoomChange($event)"
+    [disabled]="isRoomDisabled"
+  >
+    <option [ngValue]="null">{{ roomPlaceholder }}</option>
+    <option *ngFor="let room of visibleRooms" [ngValue]="room.id">
+      {{ room.title }}
+    </option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label>Sensör</label>
+  <select
+    [(ngModel)]="selectedSensorId"
+    (ngModelChange)="onSensorChange($event)"
+    [disabled]="isSensorDisabled"
+  >
+    <option [ngValue]="null">{{ sensorPlaceholder }}</option>
+    <option *ngFor="let sensor of visibleSensors" [ngValue]="sensor.id">
+      {{ sensor.title }}
+    </option>
+  </select>
+</div>
+
+    <div class="form-group">
+      <label>Analiz Türü</label>
+      <select [(ngModel)]="analysisType">
+        <option value="room-latest">Odaya ait son veriler</option>
+        <option value="room-history">Odaya ait geçmiş veriler</option>
+        <option value="sensor-latest">Sensöre ait son veri</option>
+        <option value="sensor-average">Sensör ortalaması</option>
+        <option value="sensor-last-n">Sensörün son N kaydı</option>
+        <option value="sensor-range">Sensör tarih aralığı</option>
+      </select>
+    </div>
+
+    <div class="form-group" *ngIf="analysisType === 'sensor-last-n' || analysisType === 'room-history'">
+      <label>Limit</label>
+      <input type="number" [(ngModel)]="limit" min="1" />
+    </div>
+
+    <div class="form-group" *ngIf="analysisType === 'sensor-range'">
+      <label>Başlangıç</label>
+      <input type="datetime-local" [(ngModel)]="startDateTime" />
+    </div>
+
+    <div class="form-group" *ngIf="analysisType === 'sensor-range'">
+      <label>Bitiş</label>
+      <input type="datetime-local" [(ngModel)]="endDateTime" />
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="run-button" (click)="runAnalysis()">Sorgula</button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="result-panel">
+    Veriler yükleniyor...
+  </div>
+
+  <div *ngIf="errorMessage && !loading" class="result-panel error">
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!loading && analysisType === 'room-latest' && roomLatestData.length > 0" class="result-panel">
+    <h2>Odaya Ait Son Veriler</h2>
+    <p>Ortalama Sıcaklık: {{ roomAverageTemp ?? '-' }}</p>
+    <p>Ortalama Nem: {{ roomAverageHumidity ?? '-' }}</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Sensör Id</th>
+          <th>Sıcaklık</th>
+          <th>Nem</th>
+          <th>Zaman</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of roomLatestData">
+          <td>{{ item.sensor_id }}</td>
+          <td>{{ item.sicaklik }}</td>
+          <td>{{ item.nem }}</td>
+          <td>{{ formatTimestamp(item.timestamp) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && analysisType === 'room-history' && roomHistoryData.length > 0" class="result-panel">
+    <h2>Odaya Ait Geçmiş Veriler</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Sensör Id</th>
+          <th>Sıcaklık</th>
+          <th>Nem</th>
+          <th>Zaman</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of roomHistoryData">
+          <td>{{ item.sensor_id }}</td>
+          <td>{{ item.sicaklik }}</td>
+          <td>{{ item.nem }}</td>
+          <td>{{ formatTimestamp(item.timestamp) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && analysisType === 'sensor-latest' && sensorLatestData" class="result-panel">
+    <h2>Sensöre Ait Son Veri</h2>
+    <p>Sıcaklık: {{ sensorLatestData.sicaklik }}</p>
+    <p>Nem: {{ sensorLatestData.nem }}</p>
+    <p>Zaman: {{ formatTimestamp(sensorLatestData.timestamp) }}</p>
+  </div>
+
+  <div *ngIf="!loading && analysisType === 'sensor-average' && sensorAverageData" class="result-panel">
+    <h2>Sensör Ortalaması</h2>
+    <p>Ortalama Sıcaklık: {{ sensorAverageData.avg_sicaklik }}</p>
+    <p>Ortalama Nem: {{ sensorAverageData.avg_nem }}</p>
+  </div>
+
+  <div *ngIf="!loading && analysisType === 'sensor-last-n' && sensorLastNData.length > 0" class="result-panel">
+    <h2>Sensörün Son {{ limit }} Kaydı</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Sıcaklık</th>
+          <th>Nem</th>
+          <th>Zaman</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of sensorLastNData">
+          <td>{{ item.sicaklik }}</td>
+          <td>{{ item.nem }}</td>
+          <td>{{ formatTimestamp(item.timestamp) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div *ngIf="!loading && analysisType === 'sensor-range' && sensorRangeData.length > 0" class="result-panel">
+    <h2>Sensör Tarih Aralığı Verileri</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Sıcaklık</th>
+          <th>Nem</th>
+          <th>Zaman</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of sensorRangeData">
+          <td>{{ item.sicaklik }}</td>
+          <td>{{ item.nem }}</td>
+          <td>{{ formatTimestamp(item.timestamp) }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div class="result-panel">
+  <h2>Eski Sensör Verilerini Sil</h2>
+
+  <div class="filter-panel delete-panel">
+    <div class="form-group">
+      <label>Şu tarihten eski verileri sil</label>
+      <input type="datetime-local" [(ngModel)]="deleteOlderThanDateTime" />
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="run-button delete-button" (click)="deleteOldData()" [disabled]="deleteLoading">
+        {{ deleteLoading ? 'Siliniyor...' : 'Eski Verileri Sil' }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="deleteMessage" class="success-message">
+    {{ deleteMessage }}
+  </div>
+
+  <div *ngIf="deleteErrorMessage" class="error-message">
+    {{ deleteErrorMessage }}
+  </div>
+</div>
+</section>
+
+<app-modal
+  [isOpen]="confirmDeleteModalOpen"
+  title="VERİLERİ SİL"
+  (close)="cancelDeleteOldData()"
+>
+  <div class="alert-popup-content">
+    <div class="alert-popup-icon">!</div>
+
+    <div class="alert-popup-text">
+      <p>Seçilen tarihten eski sensör verileri silinecek. Emin misiniz?</p>
+    </div>
+
+    <div class="form-actions alert-actions">
+      <button
+        type="button"
+        class="save-button"
+        (click)="confirmDeleteOldData()"
+      >
+        Evet
+      </button>
+
+      <button
+        type="button"
+        class="cancel-button"
+        (click)="cancelDeleteOldData()"
+      >
+        İptal
+      </button>
+    </div>
+  </div>
+</app-modal>
