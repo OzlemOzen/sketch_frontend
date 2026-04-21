@@ -8,6 +8,7 @@ import { BuildingApiService } from '../../buildings/services/building-api.servic
 import { RoomApiService } from '../../rooms/services/room-api.service';
 import { SensorApiService } from '../services/sensor-api.service';
 import { Building, Room, Sensor, SensorViewModel } from '../../../models/data';
+import { ModalComponent } from 'src/app/shared/components/modal/modal.component';
 
 interface MonitorSensorItem extends SensorViewModel {
   building_id: number;
@@ -54,7 +55,7 @@ interface BuildingRoomGroup {
 @Component({
   selector: 'app-sensor-monitor',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ModalComponent],
   templateUrl: './sensor-monitor.component.html',
   styleUrls: ['./sensor-monitor.component.scss']
 })
@@ -482,10 +483,17 @@ export class SensorMonitorComponent implements OnInit, OnDestroy {
       });
     });
 
+  // this.buildingGroups = Array.from(groupedMap.values()).map((group) => ({
+  //   ...group,
+  //   floors: [...group.floors].sort((a, b) => Number(a.floorNumber) - Number(b.floorNumber))
+  // }));
+
   this.buildingGroups = Array.from(groupedMap.values()).map((group) => ({
-    ...group,
-    floors: [...group.floors].sort((a, b) => Number(a.floorNumber) - Number(b.floorNumber))
-  }));
+  ...group,
+  floors: [...group.floors].sort((a, b) => Number(a.floorNumber) - Number(b.floorNumber))
+}));
+
+this.notifyIfCountsIncreased();
 }
 
   trackByBuilding(index: number, item: BuildingRoomGroup): number {
@@ -504,6 +512,43 @@ getTotalProblematicRooms(group: BuildingRoomGroup): number {
   return group.floors.reduce((sum, floor) => sum + floor.rooms.length, 0);
 }
 
+alertModalOpen = false;
+alertModalTitle = 'Uyarı';
+alertModalMessage = '';
 
+lastWarningCount = 0;
+lastCriticalCount = 0;
+
+
+get totalWarningCount(): number {
+  return this.buildingGroups.reduce((sum, group) => sum + group.warningCount, 0);
+}
+
+get totalCriticalCount(): number {
+  return this.buildingGroups.reduce((sum, group) => sum + group.criticalCount, 0);
+}
+
+openAlert(message: string, title = 'Uyarı'): void {
+  this.alertModalTitle = title;
+  this.alertModalMessage = message;
+  this.alertModalOpen = true;
+}
+
+closeAlert(): void {
+  this.alertModalOpen = false;
+  this.alertModalMessage = '';
+}
+
+
+private notifyIfCountsIncreased(): void {
+  if (this.totalCriticalCount > this.lastCriticalCount) {
+    this.openAlert('Kritik durumda yeni oda tespit edildi!', 'Kritik Uyarı');
+  } else if (this.totalWarningCount > this.lastWarningCount) {
+    this.openAlert('Uyarı durumunda yeni oda tespit edildi!', 'Uyarı');
+  }
+
+  this.lastWarningCount = this.totalWarningCount;
+  this.lastCriticalCount = this.totalCriticalCount;
+}
 
 }
