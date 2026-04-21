@@ -398,12 +398,14 @@
   title="ODA EKLE"
   (close)="roomModalOpen = false"
 >
+<div class="modal-scroll-body">
   <app-room-form
     [formData]="roomFormData"
     submitLabel="Ekle"
     (save)="onRoomSave($event)"
     (cancel)="roomModalOpen = false"
   ></app-room-form>
+</div>
 </app-modal>
 
 <app-modal
@@ -411,15 +413,7 @@
   title="ODA GÜNCELLE"
   (close)="roomUpdateModalOpen = false"
 >
-  <!-- <div class="update-room-select-wrapper">
-    <label for="roomSelectForUpdate">Güncellenecek Oda</label>
-    <select
-      id="roomSelectForUpdate"
-      class="popup-select"
-      [ngModel]="selectedRoomIdForUpdate"
-      (ngModelChange)="onRoomSelectedForUpdate($event)"
-      name="roomSelectForUpdate"
-    > -->
+<div class="modal-scroll-body">
     <div class="popup-select-block">
   <label for="roomSelectForUpdate">Güncellenecek Oda</label>
   <select
@@ -445,6 +439,7 @@
   (save)="onRoomUpdate($event)"
   (cancel)="roomUpdateModalOpen = false"
 ></app-room-form>
+</div>
 </app-modal>
 
 <app-modal
@@ -500,15 +495,6 @@
   title="SENSÖR GÜNCELLE"
   (close)="sensorUpdateModalOpen = false"
 >
-  <!-- <div class="update-sensor-select-wrapper">
-    <label for="sensorSelectForUpdate">Güncellenecek Sensör</label>
-    <select
-      id="sensorSelectForUpdate"
-      class="popup-select"
-      [ngModel]="selectedSensorIdForUpdate"
-      (ngModelChange)="onSensorSelectedForUpdate($event)"
-      name="sensorSelectForUpdate"
-    > -->
       <div class="modal-scroll-body">
     <div class="popup-select-block">
   <label for="sensorSelectForUpdate">Güncellenecek Sensör</label>

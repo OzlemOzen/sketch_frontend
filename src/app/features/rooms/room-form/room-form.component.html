@@ -1,6 +1,6 @@
 <form #roomFormRef="ngForm" class="form">
     <div class="form-group">
-        <label for="roomTitle">Oda Adı</label>
+        <label for="roomTitle">Oda Adı:</label>
         <input
         id="roomTitle"
         type="text"
@@ -20,13 +20,13 @@
                 Oda adı sadece harflerden oluşmalıdır!
             </div>
             <div *ngIf="title.hasError('minlength')">
-                Oda adı en az 3 rakamdan oluşmalıdır!
+                Oda adı en az 3 harften oluşmalıdır!
             </div>
         </div>
     </div>
 
     <div class="form-group">
-        <label for="roomX">x (sol-üst)</label>
+        <label for="roomX">x (sol-üst):</label>
         <input
         id="roomX"
         type="number"
@@ -47,7 +47,7 @@
     </div>
 
     <div class="form-group">
-        <label for="roomY">y (sol-üst)</label>
+        <label for="roomY">y (sol-üst):</label>
         <input
         id="roomY"
         type="number"
@@ -68,7 +68,7 @@
     </div>
 
     <div class="form-group">
-        <label for="roomWidth">Genişlik</label>
+        <label for="roomWidth">Genişlik:</label>
         <input
         id="roomWidth"
         type="number"
@@ -93,7 +93,7 @@
     </div>
 
     <div class="form-group">
-        <label for="roomHeight">Yükseklik</label>
+        <label for="roomHeight">Yükseklik:</label>
         <input
         id="roomHeight"
         type="number"
@@ -117,15 +117,15 @@
         </div>
     </div>
 
-    <div class="metric-group">
+    <!-- <div class="metric-group">
     <h3>Sıcaklık Eşikleri</h3>
 
   <div class="form-group">
-    <label for="sensorSicaklikOptimum">Sıcaklık optimum değer:</label>
+    <label for="roomSicaklikOptimum">Optimum sıcaklık:</label>
     <input
-      id="sensorSicaklikOptimum"
+      id="roomSicaklikOptimum"
       type="number"
-      name="sicaklik_optimum"
+      name="temperature_optimum_value"
       required
       [(ngModel)]="formData.temperature_optimum_value"
       #temperature_optimum_value="ngModel"
@@ -139,11 +139,11 @@
   </div>
 
   <div class="form-group">
-    <label for="sensorSicaklikMin">Sıcaklık minimum değer:</label>
+    <label for="roomSicaklikMin">Minimum sıcaklık:</label>
     <input
-      id="sensorSicaklikMin"
+      id="roomSicaklikMin"
       type="number"
-      name="sicaklik_min"
+      name="temperature_min_value"
       required
       [(ngModel)]="formData.temperature_min_value"
       #temperature_min_value="ngModel"
@@ -151,17 +151,20 @@
     />
     <div *ngIf="temperature_min_value.invalid && temperature_min_value.touched" class="alert">
       <div *ngIf="temperature_min_value.hasError('required')">
-        Sıcaklık minimum değeri zorunludur!
+        Minimum sıcaklık değerinin girilmesi zorunludur!
+      </div>
+      <div *ngIf="temperature_min_value>temperature_optimum_value">
+        Minimum sıcaklık değeri optimum sıcaklık değerinden büyük olamaz!
       </div>
     </div>
   </div>
 
   <div class="form-group">
-    <label for="sensorSicaklikMax">Sıcaklık maksimum değer:</label>
+    <label for="roomSicaklikMax">Maksimum sıcaklık:</label>
     <input
-      id="sensorSicaklikMax"
+      id="roomSicaklikMax"
       type="number"
-      name="sicaklik_max"
+      name="temperature_max_value"
       required
       [(ngModel)]="formData.temperature_max_value"
       #temperature_max_value="ngModel"
@@ -169,21 +172,102 @@
     />
     <div *ngIf="temperature_max_value.invalid && temperature_max_value.touched" class="alert">
       <div *ngIf="temperature_max_value.hasError('required')">
-        Sıcaklık maksimum değeri zorunludur!
+        Maksimum sıcaklık değeri zorunludur!
       </div>
+      <div *ngIf="temperature_max_value<temperature_optimum_value">
+        Maksimum sıcaklık değeri optimum değerden küçük olamaz.
+      </div>
+    </div>
+  </div>
+</div> -->
+
+<div class="metric-group">
+  <h3>Sıcaklık Eşikleri</h3>
+
+  <div class="form-group">
+    <label for="roomSicaklikOptimum">Optimum sıcaklık:</label>
+    <input
+      id="roomSicaklikOptimum"
+      type="number"
+      name="temperature_optimum_value"
+      required
+      [(ngModel)]="formData.temperature_optimum_value"
+      #temperature_optimum_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="temperature_optimum_value.invalid && temperature_optimum_value.touched" class="alert">
+      <div *ngIf="temperature_optimum_value.hasError('required')">
+        Sıcaklık optimum değeri zorunludur!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="roomSicaklikMin">Minimum sıcaklık:</label>
+    <input
+      id="roomSicaklikMin"
+      type="number"
+      name="temperature_min_value"
+      required
+      [(ngModel)]="formData.temperature_min_value"
+      #temperature_min_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="temperature_min_value.invalid && temperature_min_value.touched" class="alert">
+      <div *ngIf="temperature_min_value.hasError('required')">
+        Minimum sıcaklık değerinin girilmesi zorunludur!
+      </div>
+    </div>
+    <div
+      *ngIf="
+        formData.temperature_min_value != null &&
+        formData.temperature_optimum_value != null &&
+        formData.temperature_min_value > formData.temperature_optimum_value
+      "
+      class="alert"
+    >
+      Minimum sıcaklık değeri optimum sıcaklık değerinden büyük olamaz!
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="roomSicaklikMax">Maksimum sıcaklık:</label>
+    <input
+      id="roomSicaklikMax"
+      type="number"
+      name="temperature_max_value"
+      required
+      [(ngModel)]="formData.temperature_max_value"
+      #temperature_max_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="temperature_max_value.invalid && temperature_max_value.touched" class="alert">
+      <div *ngIf="temperature_max_value.hasError('required')">
+        Maksimum sıcaklık değeri zorunludur!
+      </div>
+    </div>
+    <div
+      *ngIf="
+        formData.temperature_max_value != null &&
+        formData.temperature_optimum_value != null &&
+        formData.temperature_max_value < formData.temperature_optimum_value
+      "
+      class="alert"
+    >
+      Maksimum sıcaklık değeri optimum değerden küçük olamaz.
     </div>
   </div>
 </div>
 
-<div class="metric-group">
+<!-- <div class="metric-group">
   <h3>Nem Eşikleri</h3>
 
   <div class="form-group">
-    <label for="sensorNemOptimum">Nem optimum değer:</label>
+    <label for="roomNemOptimum">Optimum nem:</label>
     <input
-      id="sensorNemOptimum"
+      id="roomNemOptimum"
       type="number"
-      name="nem_optimum"
+      name="humidity_optimum_value"
       required
       [(ngModel)]="formData.humidity_optimum_value"
       #humidity_optimum_value="ngModel"
@@ -191,17 +275,18 @@
     />
     <div *ngIf="humidity_optimum_value.invalid && humidity_optimum_value.touched" class="alert">
       <div *ngIf="humidity_optimum_value.hasError('required')">
-        Nem optimum değeri zorunludur!
+        Optimum nem değeri zorunludur!
       </div>
     </div>
   </div>
 
   <div class="form-group">
-    <label for="sensorNemMin">Nem minimum değer:</label>
+    <label for="roomNemMin">Minimum nem:</label>
     <input
-      id="sensorNemMin"
+      id="roomNemMin"
       type="number"
-      name="nem_min"
+      name="humidity_min_value"
+      required
       required
       [(ngModel)]="formData.humidity_min_value"
       #humidity_min_value="ngModel"
@@ -209,15 +294,18 @@
     />
     <div *ngIf="humidity_min_value.invalid && humidity_min_value.touched" class="alert">
       <div *ngIf="humidity_min_value.hasError('required')">
-        Nem minimum değeri zorunludur!
+        Minimum nem değeri zorunludur!
+      </div>
+      <div *ngIf="humidity_min_value>humidity_optimum_value">
+        Minimum nem değeri optimumdan büyük olamaz!
       </div>
     </div>
   </div>
 
   <div class="form-group">
-    <label for="sensorNemMax">Nem maksimum değer:</label>
+    <label for="roomNemMax">Nem maksimum değer:</label>
     <input
-      id="sensorNemMax"
+      id="roomNemMax"
       type="number"
       name="humidity_max_value"
       required
@@ -227,11 +315,92 @@
     />
     <div *ngIf="humidity_max_value.invalid && humidity_max_value.touched" class="alert">
       <div *ngIf="humidity_max_value.hasError('required')">
-        Nem maksimum değeri zorunludur!
+        Maksimum nem değeri zorunludur!
+      </div>
+      <div *ngIf="humidity_max_value<humidity_optimum_value">
+        Maksimum nem değeri optimum nem değerinden küçük olamaz!
       </div>
     </div>
   </div>
-</div> 
+</div> -->
+
+<div class="metric-group">
+  <h3>Nem Eşikleri</h3>
+
+  <div class="form-group">
+    <label for="roomNemOptimum">Optimum nem:</label>
+    <input
+      id="roomNemOptimum"
+      type="number"
+      name="humidity_optimum_value"
+      required
+      [(ngModel)]="formData.humidity_optimum_value"
+      #humidity_optimum_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="humidity_optimum_value.invalid && humidity_optimum_value.touched" class="alert">
+      <div *ngIf="humidity_optimum_value.hasError('required')">
+        Optimum nem değeri zorunludur!
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="roomNemMin">Minimum nem:</label>
+    <input
+      id="roomNemMin"
+      type="number"
+      name="humidity_min_value"
+      required
+      [(ngModel)]="formData.humidity_min_value"
+      #humidity_min_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="humidity_min_value.invalid && humidity_min_value.touched" class="alert">
+      <div *ngIf="humidity_min_value.hasError('required')">
+        Minimum nem değeri zorunludur!
+      </div>
+    </div>
+    <div
+      *ngIf="
+        formData.humidity_min_value != null &&
+        formData.humidity_optimum_value != null &&
+        formData.humidity_min_value > formData.humidity_optimum_value
+      "
+      class="alert"
+    >
+      Minimum nem değeri optimumdan büyük olamaz!
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label for="roomNemMax">Nem maksimum değer:</label>
+    <input
+      id="roomNemMax"
+      type="number"
+      name="humidity_max_value"
+      required
+      [(ngModel)]="formData.humidity_max_value"
+      #humidity_max_value="ngModel"
+      (keydown.enter)="focusNext($event)"
+    />
+    <div *ngIf="humidity_max_value.invalid && humidity_max_value.touched" class="alert">
+      <div *ngIf="humidity_max_value.hasError('required')">
+        Maksimum nem değeri zorunludur!
+      </div>
+    </div>
+    <div
+      *ngIf="
+        formData.humidity_max_value != null &&
+        formData.humidity_optimum_value != null &&
+        formData.humidity_max_value < formData.humidity_optimum_value
+      "
+      class="alert"
+    >
+      Maksimum nem değeri optimum nem değerinden küçük olamaz!
+    </div>
+  </div>
+</div>
 
 
     <div class="form-actions">

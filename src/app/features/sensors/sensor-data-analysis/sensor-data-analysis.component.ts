@@ -136,13 +136,25 @@ get sensorPlaceholder(): string {
     });
   }
 
-  get visibleSensors(): Sensor[] {
-    if (this.selectedRoomId == null) {
-      return [];
-    }
+  // get visibleSensors(): Sensor[] {
+  //   if (this.selectedRoomId == null) {
+  //     return [];
+  //   }
 
-    return this.sensors.filter((sensor) => sensor.room_id === this.selectedRoomId);
+  //   return this.sensors.filter((sensor) => sensor.room_id === this.selectedRoomId);
+  // }
+
+  get visibleSensors(): Sensor[] {
+  if (this.selectedRoomId == null) {
+    return [];
   }
+
+  const selectedRoom = this.visibleRooms.find(
+    (room) => room.id === this.selectedRoomId
+  );
+
+  return selectedRoom?.sensors ?? [];
+}
 
   onBuildingChange(buildingId: number | null): void {
   this.selectedBuildingId = buildingId;
@@ -167,17 +179,23 @@ onFloorChange(): void {
   this.clearResults();
 }
 
+// onRoomChange(roomId: number | null): void {
+//   this.selectedRoomId = roomId;
+//   this.selectedSensorId = null;
+//   this.sensors = [];
+//   this.clearResults();
+
+//   if (roomId == null) {
+//     return;
+//   }
+
+//   this.loadSensorsByRoom(roomId);
+// }
+
 onRoomChange(roomId: number | null): void {
   this.selectedRoomId = roomId;
   this.selectedSensorId = null;
-  this.sensors = [];
   this.clearResults();
-
-  if (roomId == null) {
-    return;
-  }
-
-  this.loadSensorsByRoom(roomId);
 }
 
   onSensorChange(sensorId: number | null): void {
@@ -390,27 +408,44 @@ onRoomChange(roomId: number | null): void {
     });
   }
 
+  // private loadRoomsByBuilding(buildingId: number): void {
+  //   this.roomApiService.getRoomsByBuildingId(buildingId).subscribe({
+  //     next: (rooms) => {
+  //       this.rooms = rooms;
+  //     },
+  //     error: () => {
+  //       this.errorMessage = 'Odalar yüklenemedi.';
+  //     }
+  //   });
+  // }
   private loadRoomsByBuilding(buildingId: number): void {
-    this.roomApiService.getRoomsByBuildingId(buildingId).subscribe({
-      next: (rooms) => {
-        this.rooms = rooms;
-      },
-      error: () => {
-        this.errorMessage = 'Odalar yüklenemedi.';
-      }
-    });
-  }
+  this.roomApiService.getRoomsByBuildingId(buildingId).subscribe({
+    next: (rooms: Room[]) => {
+      this.rooms = rooms;
 
-  private loadSensorsByRoom(roomId: number): void {
-    this.sensorApiService.getSensorsByRoomId(roomId).subscribe({
-      next: (sensors) => {
-        this.sensors = sensors;
-      },
-      error: () => {
-        this.errorMessage = 'Sensörler yüklenemedi.';
-      }
-    });
-  }
+      this.sensors = rooms.flatMap((room) => room.sensors ?? []);
+
+      console.log('Analiz ekranı rooms:', this.rooms);
+      console.log('Analiz ekranı sensors:', this.sensors);
+    },
+    error: () => {
+      this.errorMessage = 'Odalar yüklenemedi.';
+      this.rooms = [];
+      this.sensors = [];
+    }
+  });
+}
+
+  // private loadSensorsByRoom(roomId: number): void {
+  //   this.sensorApiService.getSensorsByRoomId(roomId).subscribe({
+  //     next: (sensors) => {
+  //       this.sensors = sensors;
+  //     },
+  //     error: () => {
+  //       this.errorMessage = 'Sensörler yüklenemedi.';
+  //     }
+  //   });
+  // }
 
   private clearResults(): void {
     this.roomLatestData = [];
