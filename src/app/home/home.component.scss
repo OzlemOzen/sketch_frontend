@@ -46,7 +46,7 @@ $grid-color: #d1d5db;
 }
 
 .container {
-  width: min(100%, 2000px);
+  width: 100vw;
   height: 75vh;
   overflow: hidden;
   cursor: grab;
@@ -63,7 +63,6 @@ $grid-color: #d1d5db;
 }
 
 .sketch {
-  width: min(100%, 2000px);
   height: 75vh;
   position: relative;
   overflow: hidden;
@@ -72,8 +71,6 @@ $grid-color: #d1d5db;
     linear-gradient(to bottom, $grid-color 1px, transparent 1px);
   background-position: center center;
 }
-
-
 
 .content {
   position: relative;
