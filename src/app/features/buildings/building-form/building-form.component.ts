@@ -7,7 +7,6 @@ import {
   Input,
   Output,
   ViewChild,
-  OnChanges,
   SimpleChanges
 } from '@angular/core';
 import { NgForm } from '@angular/forms';

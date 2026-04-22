@@ -99,9 +99,6 @@
             <div *ngIf="postcode.hasError('pattern')">
                 Posta Kodu bilgisi 5 rakamdan oluşmalıdır!
             </div>
-            <!-- <div *ngIf="postcode.hasError('minlength') || postcode.hasError('maxlength')">
-                Posta Kodu bilgisi 5 rakamdan oluşmalıdır!
-            </div> -->
         </div>
     </div>
 
@@ -121,9 +118,6 @@
             <div *ngIf="address.hasError('required')">
                 Adres bilgisi zorunludur!
             </div>
-            <!-- <div *ngIf="address.hasError('pattern')">
-                Adres bilgisi geçerli karakterlerden oluşmalıdır!
-            </div> -->
             <div *ngIf="address.hasError('minlength')">
                 Adres bilgisi en az 3 harften oluşmalıdır!
             </div>

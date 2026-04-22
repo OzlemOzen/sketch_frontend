@@ -1149,22 +1149,6 @@ button {
   z-index: 1;
 }
 
-/*
-.origin-marker {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 10px;
-  height: 10px;
-  background: #ef4444;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1000;
-  pointer-events: none;
-}
-*/
-
 .sketch {
   position: relative;
 }
@@ -1203,22 +1187,6 @@ button {
   pointer-events: none;
   overflow: hidden;
 }
-
-// .ruler-x {
-//   top: 0;
-//   left: 32px;
-//   right: 0;
-//   height: 28px;
-//   border-bottom: 1px solid #cbd5e1;
-// }
-
-// .ruler-y {
-//   top: 28px;
-//   left: 0;
-//   bottom: 0;
-//   width: 32px;
-//   border-right: 1px solid #cbd5e1;
-// }
 
 .ruler-x {
   top: 0;

@@ -546,20 +546,6 @@ closeAlert(): void {
 }
 
 
-private notifyIfCountsIncreased(): void {
-  if (this.totalCriticalCount > this.lastCriticalCount) {
-    // this.openAlert('Kritik durumda yeni oda tespit edildi!', 'Kritik Uyarı');
-    this.showToast('Kritik durumda bir oda tespit edildi!', 'critical');
-  } else if (this.totalWarningCount > this.lastWarningCount) {
-    // this.openAlert('Uyarı durumunda yeni oda tespit edildi!', 'Uyarı');
-    this.showToast('Uyarı durumunda bir oda tespit edildi!', 'warning');
-  }
-
-  this.lastWarningCount = this.totalWarningCount;
-  this.lastCriticalCount = this.totalCriticalCount;
-}
-
-
 toastVisible = false;
 toastMessage = '';
 toastType: 'warning' | 'critical' = 'warning';
