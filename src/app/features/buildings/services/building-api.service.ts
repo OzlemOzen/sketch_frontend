@@ -14,7 +14,6 @@ export class BuildingApiService {
   getBuildings(): Observable<any> {
   return this.http.get<any>(`${this.baseUrl}/building`);
 }
-
   createBuilding(payload: {
   title: string;
   city: string;
@@ -24,12 +23,11 @@ export class BuildingApiService {
 }) {
   return this.http.post('http://localhost:3000/building/add', payload);
 }
-
   updateBuilding(id: number, payload: UpdateBuildingRequest): Observable<void> {
   return this.http.put<void>(`http://localhost:3000/building/${id}`, payload);
 }
 
   deleteBuilding(id: number): Observable<void> {
   return this.http.delete<void>(`http://localhost:3000/building/${id}`);
-}
+  }
 }

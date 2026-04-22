@@ -2,15 +2,15 @@
     <div class="form-group">
         <label for="buildingTitle">Bina Adı</label>
         <input
-    id="buildingTitle" 
-    type="text"
-    name="title"
-    required
-    pattern="^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]+$"
-    minlength="3"
-    [(ngModel)]="formData.title"
-    #title="ngModel"
-    (keydown.enter)="focusNext($event)"
+        id="buildingTitle" 
+        type="text"
+        name="title"
+        required
+        pattern="^[a-zA-ZğüşöçıİĞÜŞÖÇ\s]+$"
+        minlength="3"
+        [(ngModel)]="formData.title"
+        #title="ngModel"
+        (keydown.enter)="focusNext($event)"
   />
   <div *ngIf="title.invalid && title.touched" class="alert">
     <div *ngIf="title.hasError('required')">

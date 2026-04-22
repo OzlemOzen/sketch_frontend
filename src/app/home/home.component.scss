@@ -46,7 +46,7 @@ $grid-color: #d1d5db;
 }
 
 .container {
-  width: min(900px, 1900px);
+  width: min(100%, 1900px);
   height: 75vh;
   overflow: hidden;
   cursor: grab;
@@ -57,13 +57,14 @@ $grid-color: #d1d5db;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
 
+
 .container:active {
   cursor: grabbing;
 }
 
 .sketch {
-  width: 100%;
-  height: 100%;
+  width: min(100%, 1900px);
+  height: 75vh;
   position: relative;
   overflow: hidden;
   background-image:
@@ -71,6 +72,8 @@ $grid-color: #d1d5db;
     linear-gradient(to bottom, $grid-color 1px, transparent 1px);
   background-position: center center;
 }
+
+
 
 .content {
   position: relative;
@@ -870,18 +873,6 @@ title{
   word-break: break-word;
 }
 
-.container {
-  width: 100%;
-  height: 750px;
-  overflow-y: hidden;
-  padding: 12px;
-}
-
-.sketch {
-  min-width: 900px;
-  height: 750px;
-}
-
 input,
 select,
 textarea,
@@ -1147,10 +1138,6 @@ button {
 .restricted-room-title {
   position: relative;
   z-index: 1;
-}
-
-.sketch {
-  position: relative;
 }
 
 .origin-marker {
