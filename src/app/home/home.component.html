@@ -152,7 +152,8 @@
     *ngFor="let tick of horizontalRulerTicks; trackBy: trackByRulerTick"
     [style.left.px]="tick.position"
   >
-    <span class="ruler-label">{{ tick.value }}</span>
+    <!-- <span class="ruler-label">{{ tick.value }}</span> -->
+    <span class="ruler-label" *ngIf="tick.label">{{ tick.label }}</span>
   </div>
 </div>
 
@@ -574,4 +575,23 @@
   </div>
 </app-modal>
 
+</div>
+
+<div
+  *ngIf="toastVisible"
+  class="status-toast"
+  [ngClass]="{
+    'toast-warning': toastType === 'warning',
+    'toast-critical': toastType === 'critical'
+  }"
+>
+  <div class="toast-icon">
+    {{ toastType === 'critical' ? '!' : '⚠' }}
+  </div>
+
+  <div class="toast-content">
+    {{ toastMessage }}
+  </div>
+
+  <button type="button" class="toast-close" (click)="closeToast()">×</button>
 </div>

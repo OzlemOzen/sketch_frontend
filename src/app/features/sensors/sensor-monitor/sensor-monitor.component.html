@@ -259,3 +259,23 @@
     </div>
   </app-modal>
 </section>
+
+
+<div
+  *ngIf="toastVisible"
+  class="status-toast"
+  [ngClass]="{
+    'toast-warning': toastType === 'warning',
+    'toast-critical': toastType === 'critical'
+  }"
+>
+  <div class="toast-icon">
+    {{ toastType === 'critical' ? '!' : '⚠' }}
+  </div>
+
+  <div class="toast-content">
+    {{ toastMessage }}
+  </div>
+
+  <button type="button" class="toast-close" (click)="closeToast()">×</button>
+</div>

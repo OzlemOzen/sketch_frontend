@@ -137,6 +137,15 @@ export class SensorMonitorComponent implements OnInit, OnDestroy {
           .filter((sensor): sensor is MonitorSensorItem => sensor !== null);
 
         this.refreshBuildingGroups();
+        
+        const currentProblemRooms = this.buildingGroups.flatMap(group =>
+  group.floors.flatMap(floor => floor.rooms)
+);
+
+this.previousProblemRoomKeys = new Set(
+  currentProblemRooms.map(room => this.getProblemRoomKey(room))
+);
+
         this.initWebSocket();
         this.loading = false;
       },
@@ -483,17 +492,14 @@ export class SensorMonitorComponent implements OnInit, OnDestroy {
       });
     });
 
-  // this.buildingGroups = Array.from(groupedMap.values()).map((group) => ({
-  //   ...group,
-  //   floors: [...group.floors].sort((a, b) => Number(a.floorNumber) - Number(b.floorNumber))
-  // }));
+   this.buildingGroups = Array.from(groupedMap.values()).map((group) => ({
+     ...group,
+     floors: [...group.floors].sort((a, b) => Number(a.floorNumber) - Number(b.floorNumber))
+   }));
 
-  this.buildingGroups = Array.from(groupedMap.values()).map((group) => ({
-  ...group,
-  floors: [...group.floors].sort((a, b) => Number(a.floorNumber) - Number(b.floorNumber))
-}));
+  //  this.notifyIfCountsIncreased();
 
-this.notifyIfCountsIncreased();
+  this.notifyNewProblemRooms();
 }
 
   trackByBuilding(index: number, item: BuildingRoomGroup): number {
@@ -542,13 +548,101 @@ closeAlert(): void {
 
 private notifyIfCountsIncreased(): void {
   if (this.totalCriticalCount > this.lastCriticalCount) {
-    this.openAlert('Kritik durumda yeni oda tespit edildi!', 'Kritik Uyarı');
+    // this.openAlert('Kritik durumda yeni oda tespit edildi!', 'Kritik Uyarı');
+    this.showToast('Kritik durumda bir oda tespit edildi!', 'critical');
   } else if (this.totalWarningCount > this.lastWarningCount) {
-    this.openAlert('Uyarı durumunda yeni oda tespit edildi!', 'Uyarı');
+    // this.openAlert('Uyarı durumunda yeni oda tespit edildi!', 'Uyarı');
+    this.showToast('Uyarı durumunda bir oda tespit edildi!', 'warning');
   }
 
   this.lastWarningCount = this.totalWarningCount;
   this.lastCriticalCount = this.totalCriticalCount;
 }
+
+
+toastVisible = false;
+toastMessage = '';
+toastType: 'warning' | 'critical' = 'warning';
+private toastTimeout: ReturnType<typeof setTimeout> | null = null;
+
+showToast(message: string, type: 'warning' | 'critical'): void {
+  this.toastMessage = message;
+  this.toastType = type;
+  this.toastVisible = true;
+
+  if (this.toastTimeout) {
+    clearTimeout(this.toastTimeout);
+  }
+
+  this.toastTimeout = setTimeout(() => {
+    this.toastVisible = false;
+    this.toastTimeout = null;
+  }, 5000);
+}
+
+closeToast(): void {
+  this.toastVisible = false;
+
+  if (this.toastTimeout) {
+    clearTimeout(this.toastTimeout);
+    this.toastTimeout = null;
+  }
+}
+
+
+
+
+
+
+
+private previousProblemRoomKeys = new Set<string>();
+
+private getProblemRoomKey(room: ProblematicRoomItem): string {
+  return `${room.buildingId}-${room.floorNumber}-${room.roomId}-${room.status}`;
+}
+
+
+private notifyNewProblemRooms(): void {
+  const currentProblemRooms = this.buildingGroups.flatMap(group =>
+    group.floors.flatMap(floor => floor.rooms)
+  );
+
+  const currentKeys = new Set(
+    currentProblemRooms.map(room => this.getProblemRoomKey(room))
+  );
+
+  const newCriticalRoom = currentProblemRooms.find(
+    room =>
+      room.status === 'critical' &&
+      !this.previousProblemRoomKeys.has(this.getProblemRoomKey(room))
+  );
+
+  if (newCriticalRoom) {
+    this.showToast(
+      `Kritik: ${newCriticalRoom.buildingTitle} / Kat ${newCriticalRoom.floorNumber} / ${newCriticalRoom.title}`,
+      'critical'
+    );
+    this.previousProblemRoomKeys = currentKeys;
+    return;
+  }
+
+  const newWarningRoom = currentProblemRooms.find(
+    room =>
+      room.status === 'warning' &&
+      !this.previousProblemRoomKeys.has(this.getProblemRoomKey(room))
+  );
+
+  if (newWarningRoom) {
+    this.showToast(
+      `Uyarı: ${newWarningRoom.buildingTitle} / Kat ${newWarningRoom.floorNumber} / ${newWarningRoom.title}`,
+      'warning'
+    );
+  }
+
+  this.previousProblemRoomKeys = currentKeys;
+}
+
+
+
 
 }
