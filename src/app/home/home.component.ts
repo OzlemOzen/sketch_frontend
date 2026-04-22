@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 import { BuildingApiService } from '../features/buildings/services/building-api.service';
 import { SensorApiService } from '../features/sensors/services/sensor-api.service';
 import { FormsModule } from '@angular/forms';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import {
   RestrictedAreaApiService,
   RestrictedAreaDto
@@ -117,10 +117,14 @@ type Rect = {
 
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly roomApiService = inject(RoomApiService);
-
   private readonly buildingApiService = inject(BuildingApiService);
   private readonly sensorApiService = inject(SensorApiService);
   private readonly restrictedAreaApiService = inject(RestrictedAreaApiService);
+  private route = inject(ActivatedRoute);
+
+
+  private pendingBuildingIdFromUrl: number | null = null;
+  private pendingFloorFromUrl: number | null = null;
 
   selectedFloorNumber: number | null = null;
   title = 'sketch_frontend';
@@ -396,7 +400,17 @@ ws?: WebSocket;
 
 ngOnInit(): void {
   console.log('ngOnInit çalıştı');
-  this.loadBuildings();
+
+  this.route.queryParams.subscribe((params) => {
+    this.pendingBuildingIdFromUrl =
+      params['buildingId'] != null ? Number(params['buildingId']) : null;
+
+    this.pendingFloorFromUrl =
+      params['floor'] != null ? Number(params['floor']) : null;
+
+    this.loadBuildings();
+  });
+
   this.initWebSocket();
 }
 
@@ -764,6 +778,8 @@ trackByRulerTick(index: number, tick: RulerTick): number {
       y: null,
       width: null,
       height: null,
+      last_x: null,
+      last_y: null,
       temperature_min_value: null,
       temperature_max_value: null,
       temperature_optimum_value: null,
@@ -1242,39 +1258,6 @@ onWindowResize(): void {
   this.updateContainerSize();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   openAddBuildingModal(): void {
     this.buildingFormData = this.createEmptyBuildingForm();
     this.buildingModalOpen = true;
@@ -1493,6 +1476,15 @@ onBuildingSave(formValue: BuildingFormValue): void {
         this.currentBuildingId = newBuildingId;
         this.selectedFloorNumber = 0;
 
+        this.router.navigate([], {
+  relativeTo: this.route,
+  queryParams: {
+    buildingId: this.currentBuildingId,
+    floor: this.selectedFloorNumber
+  },
+  queryParamsHandling: 'merge'
+});
+
         this.floors = [{ floor_number: 0 }];
         this.rooms = [];
         this.sensors = [];
@@ -1556,7 +1548,8 @@ onFloorSave(formValue: FloorFormValue): void {
     }
   });
 }
- 
+
+
 loadBuildings(): void {
   console.log('loadBuildings çağrıldı');
 
@@ -1571,6 +1564,19 @@ loadBuildings(): void {
           : [];
 
       console.log('this.buildings:', this.buildings);
+
+      if (
+        this.pendingBuildingIdFromUrl != null &&
+        this.buildings.some((b) => b.id === this.pendingBuildingIdFromUrl)
+      ) {
+        this.currentBuildingId = this.pendingBuildingIdFromUrl;
+        this.loadFloorsByBuilding(this.pendingBuildingIdFromUrl);
+
+        if (this.pendingFloorFromUrl != null) {
+          this.selectedFloorNumber = this.pendingFloorFromUrl;
+          this.loadRooms(this.pendingBuildingIdFromUrl, this.pendingFloorFromUrl);
+        }
+      }
     },
     error: (error: any) => {
       console.error('Binalar alınamadı:', error);
@@ -1786,6 +1792,15 @@ getSensorIcon(sensor: SensorViewModel): string {
 onBuildingChange(buildingId: number | null, autoSelectFirstFloor = false): void {
   this.currentBuildingId = buildingId;
 
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: {
+      buildingId: this.currentBuildingId,
+      floor: null
+    },
+    queryParamsHandling: 'merge'
+  });
+
   console.log('currentBuildingId:', this.currentBuildingId);
   console.log('floors:', this.floors);
 
@@ -1813,201 +1828,18 @@ onFloorChange(floorNumber: number): void {
   }
 
   this.selectedFloorNumber = floorNumber;
+
+  this.router.navigate([], {
+    relativeTo: this.route,
+    queryParams: {
+      buildingId: this.currentBuildingId,
+      floor: this.selectedFloorNumber
+    },
+    queryParamsHandling: 'merge'
+  });
+
   this.loadRooms(this.currentBuildingId, floorNumber);
 }
-private isRoomOverlapping(
-  first: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  },
-  second: {
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  }
-): boolean {
-  const firstLeft = first.x;
-  const firstRight = first.x + first.width;
-  const firstTop = first.y;
-  const firstBottom = first.y - first.height;
-
-  const secondLeft = second.x;
-  const secondRight = second.x + second.width;
-  const secondTop = second.y;
-  const secondBottom = second.y - second.height;
-
-  const noOverlap =
-    firstRight <= secondLeft ||
-    firstLeft >= secondRight ||
-    firstTop <= secondBottom ||
-    firstBottom >= secondTop;
-
-  return !noOverlap;
-}
-
-private hasRoomOverlap(formValue: RoomFormValue): boolean {
-  const buildingId = formValue.buildingId ?? this.currentBuildingId;
-  const floorNumber = formValue.floorNumber ?? this.selectedFloorNumber;
-
-  if (
-    buildingId === null ||
-    floorNumber === null ||
-    formValue.x === null ||
-    formValue.y === null ||
-    formValue.width === null ||
-    formValue.height === null
-  ) {
-    return false;
-  }
-
-  const newRoom = {
-    x: formValue.x,
-    y: formValue.y,
-    width: formValue.width,
-    height: formValue.height
-  };
-
-  return this.rooms.some((room) => {
-    if (room.is_corridor) {
-      return false;
-    }
-
-    if (room.building_id !== buildingId) {
-      return false;
-    }
-
-    if (room.floor_number !== floorNumber) {
-      return false;
-    }
-
-    if (
-      room.x === null ||
-      room.y === null ||
-      room.width === null ||
-      room.height === null
-    ) {
-      return false;
-    }
-
-    return this.isRoomOverlapping(newRoom, {
-      x: room.x,
-      y: room.y,
-      width: room.width,
-      height: room.height
-    });
-  });
-}
-
-private hasRoomOverlapForUpdate(
-  roomId: number,
-  formValue: RoomFormValue
-): boolean {
-  const buildingId = formValue.buildingId ?? this.currentBuildingId;
-  const floorNumber = formValue.floorNumber ?? this.selectedFloorNumber;
-
-  if (
-    buildingId === null ||
-    floorNumber === null ||
-    formValue.x === null ||
-    formValue.y === null ||
-    formValue.width === null ||
-    formValue.height === null
-  ) {
-    return false;
-  }
-
-  const updatedRoom = {
-    x: formValue.x,
-    y: formValue.y,
-    width: formValue.width,
-    height: formValue.height
-  };
-
-  return this.rooms.some((room) => {
-    if (room.is_corridor) {
-      return false;
-    }
-
-    if (room.id === roomId) {
-      return false;
-    }
-
-    if (room.building_id !== buildingId) {
-      return false;
-    }
-
-    if (room.floor_number !== floorNumber) {
-      return false;
-    }
-
-    if (
-      room.x === null ||
-      room.y === null ||
-      room.width === null ||
-      room.height === null
-    ) {
-      return false;
-    }
-
-    return this.isRoomOverlapping(updatedRoom, {
-      x: room.x,
-      y: room.y,
-      width: room.width,
-      height: room.height
-    });
-  });
-}
-
-private hasExactRoomCollisionForUpdate(
-  roomId: number,
-  formValue: RoomFormValue
-): boolean {
-  const buildingId = formValue.buildingId ?? this.currentBuildingId;
-  const floorNumber = formValue.floorNumber ?? this.selectedFloorNumber;
-
-  if (
-    buildingId === null ||
-    floorNumber === null ||
-    formValue.x === null ||
-    formValue.y === null ||
-    formValue.width === null ||
-    formValue.height === null
-  ) {
-    return false;
-  }
-
-  return this.rooms.some((room) =>
-    room.is_corridor !== true &&
-    room.id !== roomId &&
-    room.building_id === buildingId &&
-    room.floor_number === floorNumber &&
-    room.x !== null &&
-    room.y !== null &&
-    room.width !== null &&
-    room.height !== null &&
-    room.x === formValue.x &&
-    room.y === formValue.y &&
-    room.width === formValue.width &&
-    room.height === formValue.height
-  );
-}
-
-private isPointInsideRectangle(
-  x: number,
-  y: number,
-  rect: { x: number; y: number; width: number; height: number }
-): boolean {
-  return (
-    x > rect.x &&
-    x < rect.x + rect.width &&
-    y > rect.y &&
-    y < rect.y + rect.height
-  );
-}
-
 
 private hasSensorConflictForRestrictedArea(
   formValue: RoomFormValue,
@@ -2131,6 +1963,69 @@ private hasSensorConflictForRestrictedArea(
 }
 
 
+private hasCorridorSensorConflict(
+  formValue: RoomFormValue
+): boolean {
+  const buildingId = formValue.buildingId ?? this.currentBuildingId;
+  const floorNumber = formValue.floorNumber ?? this.selectedFloorNumber;
+
+  if (
+    buildingId == null ||
+    floorNumber == null ||
+    formValue.x == null ||
+    formValue.y == null ||
+    formValue.width == null ||
+    formValue.height == null
+  ) {
+    return false;
+  }
+
+  const newRoomRect = {
+    x: formValue.x,
+    y: formValue.y,
+    width: formValue.width,
+    height: formValue.height
+  };
+
+  const corridorRooms = this.rooms.filter((room) => {
+    return (
+      room.is_corridor === true &&
+      room.building_id === buildingId &&
+      room.floor_number === floorNumber
+    );
+  });
+
+  for (const corridorRoom of corridorRooms) {
+    if (corridorRoom.id == null) {
+      continue;
+    }
+
+    const corridorSensors = this.sensors.filter(
+      (sensor) => sensor.room_id === corridorRoom.id
+    );
+
+    const hasConflict = corridorSensors.some((sensor) => {
+      if (sensor.x == null || sensor.y == null) {
+        return false;
+      }
+
+      return (
+        sensor.x >= newRoomRect.x &&
+        sensor.x <= newRoomRect.x + newRoomRect.width &&
+        sensor.y >= newRoomRect.y &&
+        sensor.y <= newRoomRect.y + newRoomRect.height
+      );
+    });
+
+    if (hasConflict) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
 private validateRoomThresholds(formValue: RoomFormValue): string | null {
   const {
     temperature_min_value,
@@ -2192,6 +2087,34 @@ private validateRoomThresholds(formValue: RoomFormValue): string | null {
   return null;
 }
 
+private validateRoomDimensionInputs(formValue: RoomFormValue): string | null {
+  const hasWidthHeight =
+    formValue.width != null && formValue.height != null;
+
+  const hasLastCoordinates =
+    formValue.last_x != null && formValue.last_y != null;
+
+  const hasPartialWidthHeight =
+    formValue.width != null || formValue.height != null;
+
+  const hasPartialLastCoordinates =
+    formValue.last_x != null || formValue.last_y != null;
+
+  if (!hasWidthHeight && !hasLastCoordinates) {
+    return 'Genişlik-yükseklik veya Son X-Son Y bilgilerinden biri girilmelidir.';
+  }
+
+  if (hasPartialWidthHeight && !hasWidthHeight) {
+    return 'Genişlik ve yükseklik birlikte girilmelidir.';
+  }
+
+  if (hasPartialLastCoordinates && !hasLastCoordinates) {
+    return 'Son X ve Son Y birlikte girilmelidir.';
+  }
+
+  return null;
+}
+
 onRoomSave(formValue: RoomFormValue): void {
   if (this.buildings.length === 0) {
     this.openAlert('Önce bir bina eklemelisiniz.');
@@ -2227,32 +2150,57 @@ onRoomSave(formValue: RoomFormValue): void {
       floorNumber: formValue.floorNumber ?? this.selectedFloorNumber
     };
 
-    const thresholdError = this.validateRoomThresholds(normalizedFormValue);
+    const dimensionInputError = this.validateRoomDimensionInputs(normalizedFormValue);
+
+if (dimensionInputError) {
+  this.openAlert(dimensionInputError);
+  return;
+}
+
+    const normalizedFormValueWithDimensions = this.normalizeRoomFormDimensions(
+  normalizedFormValue
+);
+
+    const thresholdError = this.validateRoomThresholds(normalizedFormValueWithDimensions);
     if (thresholdError) {
       this.openAlert(thresholdError);
       return;
     }
 
-    if (this.hasInvalidRoomPlacement(normalizedFormValue)) {
+    if (this.hasInvalidRoomPlacement(normalizedFormValueWithDimensions)) {
       this.openAlert('Bu oda yerleşimi geçersiz. Oda başka bir odayla birebir aynı olamaz ve yalnızca kısmi çakışma da içeremez.');
       return;
     }
 
+if (this.hasCorridorSensorConflict(normalizedFormValueWithDimensions)) {
+  this.openAlert(
+    'Koridorda sensör bulunan bir alana oda eklenemez.'
+  );
+  return;
+}
+
+if (this.hasSensorConflictForRestrictedArea(normalizedFormValueWithDimensions)) {
+  this.openAlert(
+    'Ana odada sensör bulunan bir alana restricted area oluşturulamaz.'
+  );
+  return;
+}
+
     console.log('onRoomSave this.rooms:', this.rooms);
     console.log('onRoomSave this.sensors:', this.sensors);
-    console.log('onRoomSave formValue:', normalizedFormValue);
+    console.log('onRoomSave formValue:', normalizedFormValueWithDimensions);
 
-    if (this.hasSensorConflictForRestrictedArea(normalizedFormValue)) {
+    if (this.hasSensorConflictForRestrictedArea(normalizedFormValueWithDimensions)) {
       this.openAlert(
         'Ana odada sensör bulunan bir alana restricted area oluşturulamaz.'
       );
       return;
     }
 
-    const parentRooms = this.findParentRoomsForForm(normalizedFormValue);
+    const parentRooms = this.findParentRoomsForForm(normalizedFormValueWithDimensions);
 
     const payload: CreateRoomRequest = {
-      ...mapRoomFormToCreateRoomRequest(normalizedFormValue)
+      ...mapRoomFormToCreateRoomRequest(normalizedFormValueWithDimensions)
     };
 
     this.roomApiService.createRoom(payload).subscribe({
@@ -2285,36 +2233,7 @@ onRoomSave(formValue: RoomFormValue): void {
   }
 }
 
-onBuildingUpdate(formValue: BuildingFormValue): void {
-  if (this.selectedBuildingIdForUpdate === null) {
-    this.openAlert('Güncellenecek bina seçilmedi.');
-    return;
-  }
 
-  const payload: UpdateBuildingRequest = {
-    title: String(formValue.title ?? '').trim(),
-    city: String(formValue.city ?? '').trim(),
-    county: String(formValue.county ?? '').trim(),
-    postcode: String(formValue.postcode ?? '').trim(),
-    address: String(formValue.address ?? '').trim()
-  };
-
-  console.log('building update id:', this.selectedBuildingIdForUpdate);
-  console.log('building update payload:', payload);
-
-  this.buildingApiService.updateBuilding(this.selectedBuildingIdForUpdate, payload).subscribe({
-    next: () => {
-      this.buildingUpdateModalOpen = false;
-      this.selectedBuildingIdForUpdate = null;
-      this.buildingUpdateFormData = this.createEmptyBuildingForm();
-      this.loadBuildings();
-    },
-    error: (error: any) => {
-      console.error('Bina güncellenemedi:', error);
-      this.openAlert(error?.error?.message ?? 'Bina güncellenemedi.');
-    }
-  });
-}
 
 onRoomUpdate(formValue: RoomFormValue): void {
   if (this.selectedRoomIdForUpdate === null) {
@@ -2348,8 +2267,18 @@ onRoomUpdate(formValue: RoomFormValue): void {
       buildingId: formValue.buildingId ?? this.currentBuildingId,
       floorNumber: formValue.floorNumber ?? this.selectedFloorNumber
     };
+    const dimensionInputError = this.validateRoomDimensionInputs(normalizedFormValue);
 
-    const thresholdError = this.validateRoomThresholds(normalizedFormValue);
+if (dimensionInputError) {
+  this.openAlert(dimensionInputError);
+  return;
+}
+
+    const normalizedFormValueWithDimensions = this.normalizeRoomFormDimensions(
+  normalizedFormValue
+);
+
+    const thresholdError = this.validateRoomThresholds(normalizedFormValueWithDimensions);
     if (thresholdError) {
       this.openAlert(thresholdError);
       return;
@@ -2358,7 +2287,7 @@ onRoomUpdate(formValue: RoomFormValue): void {
     if (
       this.hasInvalidRoomPlacementForUpdate(
         this.selectedRoomIdForUpdate,
-        normalizedFormValue
+        normalizedFormValueWithDimensions
       )
     ) {
       this.openAlert(
@@ -2369,12 +2298,12 @@ onRoomUpdate(formValue: RoomFormValue): void {
 
     console.log('onRoomUpdate this.rooms:', this.rooms);
     console.log('onRoomUpdate this.sensors:', this.sensors);
-    console.log('onRoomUpdate formValue:', normalizedFormValue);
+    console.log('onRoomUpdate formValue:', normalizedFormValueWithDimensions);
     console.log('selectedRoomIdForUpdate:', this.selectedRoomIdForUpdate);
 
     if (
       this.hasSensorConflictForRestrictedArea(
-        normalizedFormValue,
+        normalizedFormValueWithDimensions,
         this.selectedRoomIdForUpdate
       )
     ) {
@@ -2384,13 +2313,21 @@ onRoomUpdate(formValue: RoomFormValue): void {
       return;
     }
 
+
+if (this.hasCorridorSensorConflict(normalizedFormValueWithDimensions)) {
+  this.openAlert(
+    'Koridorda sensör bulunan bir alana oda taşınamaz.'
+  );
+  return;
+}
+
     const parentRooms = this.findParentRoomsForForm(
-      normalizedFormValue,
+      normalizedFormValueWithDimensions,
       this.selectedRoomIdForUpdate
     );
 
     const payload: UpdateRoomRequest = {
-      ...mapRoomFormToUpdateRoomRequest(normalizedFormValue),
+      ...mapRoomFormToUpdateRoomRequest(normalizedFormValueWithDimensions),
       coordinate_id: selectedRoom.coordinate_id ?? null
     };
 
@@ -2424,6 +2361,64 @@ onRoomUpdate(formValue: RoomFormValue): void {
     this.openAlert('Form verisi geçersiz.');
   }
 }
+
+
+private normalizeRoomFormDimensions(formValue: RoomFormValue): RoomFormValue {
+  let width = formValue.width;
+  let height = formValue.height;
+
+  const hasWidthHeight =
+    formValue.width != null && formValue.height != null;
+
+  const hasLastCoordinates =
+    formValue.x != null &&
+    formValue.y != null &&
+    formValue.last_x != null &&
+    formValue.last_y != null;
+
+  if (!hasWidthHeight && hasLastCoordinates) {
+    width = formValue.last_x! - formValue.x!;
+    height = formValue.y! - formValue.last_y!;
+  }
+
+  return {
+    ...formValue,
+    width,
+    height
+  };
+}
+
+onBuildingUpdate(formValue: BuildingFormValue): void {
+  if (this.selectedBuildingIdForUpdate === null) {
+    this.openAlert('Güncellenecek bina seçilmedi.');
+    return;
+  }
+
+  const payload: UpdateBuildingRequest = {
+    title: String(formValue.title ?? '').trim(),
+    city: String(formValue.city ?? '').trim(),
+    county: String(formValue.county ?? '').trim(),
+    postcode: String(formValue.postcode ?? '').trim(),
+    address: String(formValue.address ?? '').trim()
+  };
+
+  console.log('building update id:', this.selectedBuildingIdForUpdate);
+  console.log('building update payload:', payload);
+
+  this.buildingApiService.updateBuilding(this.selectedBuildingIdForUpdate, payload).subscribe({
+    next: () => {
+      this.buildingUpdateModalOpen = false;
+      this.selectedBuildingIdForUpdate = null;
+      this.buildingUpdateFormData = this.createEmptyBuildingForm();
+      this.loadBuildings();
+    },
+    error: (error: any) => {
+      console.error('Bina güncellenemedi:', error);
+      this.openAlert(error?.error?.message ?? 'Bina güncellenemedi.');
+    }
+  });
+}
+
 
 private buildRestrictedAreasPayloadForCandidate(
   candidateRoom: RoomViewModel,
@@ -2611,78 +2606,6 @@ private findParentRoomsForForm(
   });
 }
 
-private buildRestrictedAreasPayload(
-  candidateRoomId: number,
-  formValue: RoomFormValue,
-  excludeRoomId?: number
-): RestrictedAreaRequest[] {
-  const buildingId = formValue.buildingId ?? this.currentBuildingId;
-  const floorNumber = formValue.floorNumber ?? this.selectedFloorNumber;
-
-  if (
-    buildingId == null ||
-    floorNumber == null ||
-    formValue.x == null ||
-    formValue.y == null ||
-    formValue.width == null ||
-    formValue.height == null
-  ) {
-    return [];
-  }
-
-  const currentRoom = {
-    x: formValue.x,
-    y: formValue.y,
-    width: formValue.width,
-    height: formValue.height
-  };
-
-  const restrictedAreas: RestrictedAreaRequest[] = [];
-
-  for (const room of this.rooms) {
-    if (room.is_corridor) {
-      continue;
-    }
-
-    if (excludeRoomId != null && room.id === excludeRoomId) {
-      continue;
-    }
-
-    if (room.building_id !== buildingId || room.floor_number !== floorNumber) {
-      continue;
-    }
-
-    if (
-      room.x == null ||
-      room.y == null ||
-      room.width == null ||
-      room.height == null ||
-      room.coordinate_id == null
-    ) {
-      continue;
-    }
-
-    const existingRoom = {
-      x: room.x,
-      y: room.y,
-      width: room.width,
-      height: room.height
-    };
-
-    const isSame = this.isExactlySameRoom(currentRoom, existingRoom);
-    const existingInsideCurrent = this.isRoomFullyInside(existingRoom, currentRoom);
-
-    if (!isSame && existingInsideCurrent) {
-      restrictedAreas.push({
-        room_id: candidateRoomId,
-        coordinate_id: room.coordinate_id
-      });
-    }
-  }
-
-  return restrictedAreas;
-}
-
 get visibleBuildingUpdateOptions(): { id: number; title: string }[] {
   return this.buildings
     .filter((building) => building.id !== undefined)
@@ -2780,6 +2703,14 @@ onRoomSelectedForUpdate(roomId: number): void {
     y: target.y,
     width: target.width,
     height: target.height,
+    last_x:
+    target.x != null && target.width != null
+      ? target.x + target.width
+      : null,
+    last_y:
+    target.y != null && target.height != null
+      ? target.y - target.height
+      : null,
     temperature_min_value: target.temperature_min_value ?? null,
     temperature_max_value: target.temperature_max_value ?? null,
     temperature_optimum_value: target.temperature_optimum_value ?? null,
@@ -3377,22 +3308,6 @@ viewModelToSensor(sensor: SensorViewModel): Sensor {
 lastWarningRoomCount = 0;
 lastCriticalRoomCount = 0;
 
-
-private notifyIfRoomStatusIncreased(): void {
-  if (this.criticalRoomCount > this.lastCriticalRoomCount) {
-    // this.openAlert('Kritik durumda oda tespit edildi!', 'Kritik Uyarı');
-    this.showToast('Kritik durumda bir oda tespit edildi!', 'critical');
-  } else if (this.warningRoomCount > this.lastWarningRoomCount) {
-    // this.openAlert('Uyarı durumunda oda tespit edildi!', 'Uyarı');
-    this.showToast('Uyarı durumunda bir oda tespit edildi!', 'warning');
-  }
-
-  this.lastWarningRoomCount = this.warningRoomCount;
-  this.lastCriticalRoomCount = this.criticalRoomCount;
-}
-
-
-
 toastVisible = false;
 toastMessage = '';
 toastType: 'warning' | 'critical' = 'warning';
@@ -3427,12 +3342,6 @@ private previousProblemRoomKeys = new Set<string>();
 
 private getProblemRoomKey(room: RoomViewModel): string {
   return `${room.building_id}-${room.floor_number}-${room.id}-${room.statusColor}`;
-}
-
-
-private getBuildingTitleById(buildingId: number): string {
-  const building = this.buildings.find((b) => b.id === buildingId);
-  return building?.title ?? 'Bilinmeyen Bina';
 }
 
 

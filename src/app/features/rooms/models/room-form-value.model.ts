@@ -7,6 +7,9 @@ export interface RoomFormValue {
   width: number | null;
   height: number | null;
 
+  last_x?: number | null;
+  last_y?: number | null;
+
   temperature_min_value: number | null;
   temperature_max_value: number | null;
   temperature_optimum_value: number | null;

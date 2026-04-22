@@ -5,6 +5,11 @@ import { SensorMonitorComponent } from './features/sensors/sensor-monitor/sensor
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: 'home',
+    pathMatch: 'full'
+  },
+  {
+    path: 'home',
     component: HomeComponent
   },
   {
@@ -12,9 +17,13 @@ export const routes: Routes = [
     component: SensorMonitorComponent
   },
   {
-  path: 'sensor-data-analysis',
-  loadComponent: () =>
-    import('./features/sensors/sensor-data-analysis/sensor-data-analysis.component')
-      .then((m) => m.SensorDataAnalysisComponent)
-}
+    path: 'sensor-data-analysis',
+    loadComponent: () =>
+      import('./features/sensors/sensor-data-analysis/sensor-data-analysis.component')
+        .then((m) => m.SensorDataAnalysisComponent)
+  },
+  {
+    path: '**',
+    redirectTo: 'home'
+  }
 ];

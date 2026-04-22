@@ -13,9 +13,6 @@
     <button type="button" class="nav-action" (click)="addSensor()">Sensör Ekle</button>
     <button type="button" class="nav-action" (click)="updateSensor()">Sensör Güncelle</button>
     <button type="button" class="nav-action" (click)="deleteSensor()">Sensör Sil</button>
-    <!-- <button type="button" class="nav-action" routerLink="/sensor-monitor">Sensör Verilerini Görüntüle</button> -->
-    <!-- <button type="button" class="nav-action" (click)="openSensorMonitorPage()">Sensör Verilerini Görüntüle</button> -->
-    <!-- <button type="button" class="nav-action" routerLink="/sensor-monitor">Sensör Verilerini Görüntüle</button> -->
     <a class="nav-action" routerLink="/sensor-monitor" target="_blank" rel="noopener noreferrer">Tüm Odaların Durumunu Görüntüle</a>
     <a class="nav-action" routerLink="/sensor-data-analysis" target="_blank" rel="noopener noreferrer">Sensör/Oda Analizi</a>
   </nav>
@@ -152,7 +149,6 @@
     *ngFor="let tick of horizontalRulerTicks; trackBy: trackByRulerTick"
     [style.left.px]="tick.position"
   >
-    <!-- <span class="ruler-label">{{ tick.value }}</span> -->
     <span class="ruler-label" *ngIf="tick.label">{{ tick.label }}</span>
   </div>
 </div>
@@ -213,36 +209,8 @@
           [style.height.px]="restrictedRoom.height"
         >
           <span class="restricted-room-title">{{ restrictedRoom.title }}</span>
-          <!-- <span class="restricted-room-title">
-  {{ restrictedRoom.title }} - {{ restrictedRoom.statusColor }}
-</span> -->
         </div>
       </div>
-
-      <!-- <div
-        *ngFor="let sensor of visibleSensors; trackBy: trackBySensor"
-        class="sensor"
-        [style.left.px]="sensor.x"
-        [style.top.px]="-sensor.y"
-      >
-        <span class="sensor-name">{{ sensor.title }}</span>
-        <span class="material-symbols-outlined">sensors</span>
-      </div> -->
-      <!-- <div
-  *ngFor="let sensor of visibleSensors; trackBy: trackBySensor"
-  class="sensor"
-  [ngClass]="{
-    'sensor-green': sensor.statusColor === 'green',
-    'sensor-yellow': sensor.statusColor === 'yellow',
-    'sensor-red': sensor.statusColor === 'red',
-    'sensor-unknown': sensor.statusColor === 'unknown'
-  }"
-  [style.left.px]="sensor.x"
-  [style.top.px]="-sensor.y"
->
-  <span class="sensor-name">{{ sensor.title }}</span>
-  <span class="material-symbols-outlined">sensors</span>
-</div> -->
 <div
   *ngFor="let sensor of visibleSensors; trackBy: trackBySensor"
   class="sensor"
@@ -276,34 +244,6 @@
   ></app-building-form>
 </app-modal>
 
-<!-- <app-modal
-  [isOpen]="buildingDeleteModalOpen"
-  title="BİNA SİL"
-  (close)="buildingDeleteModalOpen = false"
->
-  <div class="delete-building-content">
-    <label for="buildingSelectForDelete">Silinecek Oda</label>
-    <select
-      id="buildingSelectForDelete"
-      [ngModel]="selectedBuildingIdForDelete"
-      (ngModelChange)="selectedBuildingIdForDelete = $event"
-      name="buildingSelectForDelete"
-    >
-      <option [ngValue]="null">Oda seçiniz</option>
-      <option
-        *ngFor="let building of visibleBuildingDeleteOptions"
-        [ngValue]="building.id"
-      >
-        {{ building.title }}
-      </option>
-    </select>
-
-    <p>Seçilen binayı silmek istediğinize emin misiniz?</p>
-
-    <button type="button" (click)="onBuildingDelete()">Sil</button>
-    <button type="button" (click)="buildingDeleteModalOpen = false">İptal</button>
-  </div>
-</app-modal> -->
 <app-modal
   [isOpen]="buildingUpdateModalOpen"
   title="BİNA GÜNCELLE"

@@ -139,10 +139,10 @@ export class SensorMonitorComponent implements OnInit, OnDestroy {
         this.refreshBuildingGroups();
         
         const currentProblemRooms = this.buildingGroups.flatMap(group =>
-  group.floors.flatMap(floor => floor.rooms)
-);
-
-this.previousProblemRoomKeys = new Set(
+          group.floors.flatMap(floor => floor.rooms)
+        );
+        
+        this.previousProblemRoomKeys = new Set(
   currentProblemRooms.map(room => this.getProblemRoomKey(room))
 );
 
@@ -589,12 +589,6 @@ closeToast(): void {
   }
 }
 
-
-
-
-
-
-
 private previousProblemRoomKeys = new Set<string>();
 
 private getProblemRoomKey(room: ProblematicRoomItem): string {
@@ -641,8 +635,5 @@ private notifyNewProblemRooms(): void {
 
   this.previousProblemRoomKeys = currentKeys;
 }
-
-
-
 
 }

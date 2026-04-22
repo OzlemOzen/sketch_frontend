@@ -13,50 +13,19 @@
         </option>
       </select>
     </div>
-
-    <!-- <div class="form-group">
-        <label>Kat</label>
-        <select [(ngModel)]="selectedFloorNumber" (ngModelChange)="onFloorChange()">
-            <option [ngValue]="null">Tüm katlar</option>
-            <option *ngFor="let floor of availableFloors" [ngValue]="floor">
-                Kat {{ floor }}
-            </option>
-        </select>
-    </div>
-
     <div class="form-group">
-      <label>Oda</label>
-      <select [(ngModel)]="selectedRoomId" (ngModelChange)="onRoomChange($event)">
-        <option [ngValue]="null">Oda seçiniz</option>
-        <option *ngFor="let room of visibleRooms" [ngValue]="room.id">
-          {{ room.title }}
-        </option>
-      </select>
-    </div>
-
-    <div class="form-group">
-      <label>Sensör</label>
-      <select [(ngModel)]="selectedSensorId" (ngModelChange)="onSensorChange($event)">
-        <option [ngValue]="null">Sensör seçiniz</option>
-        <option *ngFor="let sensor of visibleSensors" [ngValue]="sensor.id">
-          {{ sensor.title }}
-        </option>
-      </select>
-    </div> -->
-
-    <div class="form-group">
-  <label>Kat</label>
-  <select
-    [(ngModel)]="selectedFloorNumber"
-    (ngModelChange)="onFloorChange()"
-    [disabled]="isFloorDisabled"
-  >
-    <option [ngValue]="null">{{ floorPlaceholder }}</option>
-    <option *ngFor="let floor of availableFloors" [ngValue]="floor">
-      Kat {{ floor }}
-    </option>
-  </select>
-</div>
+      <label>Kat</label>
+      <select
+      [(ngModel)]="selectedFloorNumber"
+      (ngModelChange)="onFloorChange()"
+      [disabled]="isFloorDisabled"
+      >
+      <option [ngValue]="null">{{ floorPlaceholder }}</option>
+      <option *ngFor="let floor of availableFloors" [ngValue]="floor">
+        Kat {{ floor }}
+      </option>
+    </select>
+  </div>
 
 <div class="form-group">
   <label>Oda</label>
@@ -135,7 +104,6 @@
     <table>
       <thead>
         <tr>
-          <!-- <th>Sensör Id</th> -->
           <th>Sensör Adı</th>
           <th>Sıcaklık</th>
           <th>Nem</th>
@@ -144,7 +112,6 @@
       </thead>
       <tbody>
         <tr *ngFor="let item of roomLatestData">
-          <!-- <td>{{ item.sensor_id }}</td> -->
           <td>{{ getSensorTitle(item.sensor_id) }}</td>
           <td>{{ item.sicaklik }}</td>
           <td>{{ item.nem }}</td>

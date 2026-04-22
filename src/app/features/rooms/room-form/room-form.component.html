@@ -61,13 +61,10 @@
             <div *ngIf="y.hasError('required')">
                 y koordinat bilgisi zorunludur!
             </div>
-            <!-- <div *ngIf="y.hasError('pattern')">
-                y koordinatı sadece rakamlardan oluşmalıdır!
-            </div> -->
         </div>
     </div>
 
-    <div class="form-group">
+    <!-- <div class="form-group">
         <label for="roomWidth">Genişlik:</label>
         <input
         id="roomWidth"
@@ -83,9 +80,6 @@
             <div *ngIf="width.hasError('required')">
                 Genişlik bilgisi zorunludur!
             </div>
-            <!-- <div *ngIf="x.hasError('pattern')">
-                Genişlik sadece rakamlardan oluşmalıdır!
-            </div> -->
             <div *ngIf="width.hasError('min')">
                 Genişlik negatif olamaz.
             </div>
@@ -108,78 +102,238 @@
             <div *ngIf="height.hasError('required')">
                 Yükseklik bilgisi zorunludur!
             </div>
-            <!-- <div *ngIf="height.hasError('pattern')">
-                Yükseklik sadece rakamlardan oluşmalıdır!
-            </div> -->
             <div *ngIf="height.hasError('min')">
                 Yükseklik negatif olamaz.
             </div>
         </div>
     </div>
 
-    <!-- <div class="metric-group">
-    <h3>Sıcaklık Eşikleri</h3>
 
-  <div class="form-group">
-    <label for="roomSicaklikOptimum">Optimum sıcaklık:</label>
-    <input
-      id="roomSicaklikOptimum"
-      type="number"
-      name="temperature_optimum_value"
-      required
-      [(ngModel)]="formData.temperature_optimum_value"
-      #temperature_optimum_value="ngModel"
-      (keydown.enter)="focusNext($event)"
-    />
-    <div *ngIf="temperature_optimum_value.invalid && temperature_optimum_value.touched" class="alert">
-      <div *ngIf="temperature_optimum_value.hasError('required')">
-        Sıcaklık optimum değeri zorunludur!
-      </div>
+    <div class="form-group">
+  <label for="roomLastX">Son X:</label>
+  <input
+    id="roomLastX"
+    type="number"
+    name="last_x"
+    required
+    [(ngModel)]="formData.last_x"
+    #last_x="ngModel"
+    (keydown.enter)="focusNext($event)"
+  />
+
+  <div *ngIf="last_x.invalid && last_x.touched" class="alert">
+    <div *ngIf="last_x.hasError('required')">
+      x (sağ-alt) bilgisi zorunludur!
     </div>
   </div>
 
-  <div class="form-group">
-    <label for="roomSicaklikMin">Minimum sıcaklık:</label>
-    <input
-      id="roomSicaklikMin"
-      type="number"
-      name="temperature_min_value"
-      required
-      [(ngModel)]="formData.temperature_min_value"
-      #temperature_min_value="ngModel"
-      (keydown.enter)="focusNext($event)"
-    />
-    <div *ngIf="temperature_min_value.invalid && temperature_min_value.touched" class="alert">
-      <div *ngIf="temperature_min_value.hasError('required')">
-        Minimum sıcaklık değerinin girilmesi zorunludur!
-      </div>
-      <div *ngIf="temperature_min_value>temperature_optimum_value">
-        Minimum sıcaklık değeri optimum sıcaklık değerinden büyük olamaz!
-      </div>
+  <div
+    *ngIf="
+      formData.x != null &&
+      formData.last_x != null &&
+      formData.last_x <= formData.x
+    "
+    class="alert"
+  >
+    Son X değeri başlangıç X değerinden büyük olmalıdır.
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="roomLastY">Son Y:</label>
+  <input
+    id="roomLastY"
+    type="number"
+    name="last_y"
+    required
+    [(ngModel)]="formData.last_y"
+    #last_y="ngModel"
+    (keydown.enter)="focusNext($event)"
+  />
+
+  <div *ngIf="last_y.invalid && last_y.touched" class="alert">
+    <div *ngIf="last_y.hasError('required')">
+      y (sağ-alt) bilgisi zorunludur!
     </div>
   </div>
 
-  <div class="form-group">
-    <label for="roomSicaklikMax">Maksimum sıcaklık:</label>
-    <input
-      id="roomSicaklikMax"
-      type="number"
-      name="temperature_max_value"
-      required
-      [(ngModel)]="formData.temperature_max_value"
-      #temperature_max_value="ngModel"
-      (keydown.enter)="focusNext($event)"
-    />
-    <div *ngIf="temperature_max_value.invalid && temperature_max_value.touched" class="alert">
-      <div *ngIf="temperature_max_value.hasError('required')">
-        Maksimum sıcaklık değeri zorunludur!
-      </div>
-      <div *ngIf="temperature_max_value<temperature_optimum_value">
-        Maksimum sıcaklık değeri optimum değerden küçük olamaz.
-      </div>
-    </div>
+  <div
+    *ngIf="
+      formData.y != null &&
+      formData.last_y != null &&
+      formData.last_y >= formData.y
+    "
+    class="alert"
+  >
+    Son Y değeri başlangıç Y değerinden küçük olmalıdır.
   </div>
 </div> -->
+
+
+
+
+<div class="hint-text">
+  Ölçü için genişlik-yükseklik veya son X-son Y alanlarından birini kullanabilirsiniz.
+</div>
+
+<div
+  *ngIf="
+    formData.width == null &&
+    formData.height == null &&
+    formData.last_x == null &&
+    formData.last_y == null
+  "
+  class="alert"
+>
+  Genişlik-yükseklik veya Son X-Son Y bilgilerinden biri girilmelidir.
+</div>
+
+<div class="form-group">
+  <label for="roomWidth">Genişlik:</label>
+  <input
+    id="roomWidth"
+    type="number"
+    name="width"
+    min="0"
+    [(ngModel)]="formData.width"
+    #width="ngModel"
+    (keydown.enter)="focusNext($event)"
+  />
+
+  <div *ngIf="width.invalid && width.touched" class="alert">
+    <div *ngIf="width.hasError('min')">
+      Genişlik negatif olamaz.
+    </div>
+  </div>
+
+  <div
+    *ngIf="
+      (formData.width != null && formData.height == null) ||
+      (formData.width == null && formData.height != null)
+    "
+    class="alert"
+  >
+    Genişlik ve yükseklik birlikte girilmelidir.
+  </div>
+
+  <div
+    *ngIf="
+      formData.width != null &&
+      formData.width <= 0
+    "
+    class="alert"
+  >
+    Genişlik 0'dan büyük olmalıdır.
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="roomHeight">Yükseklik:</label>
+  <input
+    id="roomHeight"
+    type="number"
+    name="height"
+    min="0"
+    [(ngModel)]="formData.height"
+    #height="ngModel"
+    (keydown.enter)="focusNext($event)"
+  />
+
+  <div *ngIf="height.invalid && height.touched" class="alert">
+    <div *ngIf="height.hasError('min')">
+      Yükseklik negatif olamaz.
+    </div>
+  </div>
+
+  <div
+    *ngIf="
+      (formData.width != null && formData.height == null) ||
+      (formData.width == null && formData.height != null)
+    "
+    class="alert"
+  >
+    Genişlik ve yükseklik birlikte girilmelidir.
+  </div>
+
+  <div
+    *ngIf="
+      formData.height != null &&
+      formData.height <= 0
+    "
+    class="alert"
+  >
+    Yükseklik 0'dan büyük olmalıdır.
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="roomLastX">Son X:</label>
+  <input
+    id="roomLastX"
+    type="number"
+    name="last_x"
+    [(ngModel)]="formData.last_x"
+    #last_x="ngModel"
+    (keydown.enter)="focusNext($event)"
+  />
+
+  <div
+    *ngIf="
+      (formData.last_x != null && formData.last_y == null) ||
+      (formData.last_x == null && formData.last_y != null)
+    "
+    class="alert"
+  >
+    Son X ve Son Y birlikte girilmelidir.
+  </div>
+
+  <div
+    *ngIf="
+      formData.x != null &&
+      formData.last_x != null &&
+      formData.last_x <= formData.x
+    "
+    class="alert"
+  >
+    Son X değeri başlangıç X değerinden büyük olmalıdır.
+  </div>
+</div>
+
+<div class="form-group">
+  <label for="roomLastY">Son Y:</label>
+  <input
+    id="roomLastY"
+    type="number"
+    name="last_y"
+    [(ngModel)]="formData.last_y"
+    #last_y="ngModel"
+    (keydown.enter)="focusNext($event)"
+  />
+
+  <div
+    *ngIf="
+      (formData.last_x != null && formData.last_y == null) ||
+      (formData.last_x == null && formData.last_y != null)
+    "
+    class="alert"
+  >
+    Son X ve Son Y birlikte girilmelidir.
+  </div>
+
+  <div
+    *ngIf="
+      formData.y != null &&
+      formData.last_y != null &&
+      formData.last_y >= formData.y
+    "
+    class="alert"
+  >
+    Son Y değeri başlangıç Y değerinden küçük olmalıdır.
+  </div>
+</div>
+
+
+
 
 <div class="metric-group">
   <h3>Sıcaklık Eşikleri</h3>
