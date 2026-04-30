@@ -319,7 +319,46 @@ th {
   stroke-linejoin: round;
 }
 
+.average-chart-line {
+  stroke-width: 4;
+  stroke-dasharray: 8 6;
+}
+
+
 .chart-point {
   stroke: #ffffff;
   stroke-width: 2;
+  cursor: pointer;
+}
+
+.chart-tooltip {
+  position: fixed;
+  z-index: 3000;
+  min-width: 190px;
+  max-width: 280px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(17, 24, 39, 0.96);
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+  pointer-events: none;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.chart-tooltip-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #f8fafc;
+}
+
+.chart-tooltip-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.chart-tooltip-label {
+  font-weight: 700;
+  color: #cbd5e1;
 }

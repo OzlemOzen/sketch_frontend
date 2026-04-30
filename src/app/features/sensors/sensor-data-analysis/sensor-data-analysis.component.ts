@@ -37,6 +37,21 @@ type ChartSeries = {
   color: string;
 };
 
+type AverageChartItem = {
+  timestamp: number;
+  value: number;
+};
+
+type ChartTooltip = {
+  visible: boolean;
+  x: number;
+  y: number;
+  title: string;
+  metric: string;
+  value: string;
+  timeLabel: string;
+};
+
 @Component({
   selector: 'app-sensor-data-analysis',
   standalone: true,
@@ -48,6 +63,9 @@ export class SensorDataAnalysisComponent implements OnInit {
 
   temperatureChartSeries: ChartSeries[] = [];
   humidityChartSeries: ChartSeries[] = [];
+
+  roomAverageTemperatureSeries: ChartSeries[] = [];
+  roomAverageHumiditySeries: ChartSeries[] = [];
   
   chartLabels: string[] = [];
   chartWidth = 1000;
@@ -58,6 +76,16 @@ export class SensorDataAnalysisComponent implements OnInit {
   temperatureMax = 100;
   humidityMin = 0;
   humidityMax = 100;
+
+  chartTooltip: ChartTooltip = {
+  visible: false,
+  x: 0,
+  y: 0,
+  title: '',
+  metric: '',
+  value: '',
+  timeLabel: ''
+};
 
   private readonly buildingApiService = inject(BuildingApiService);
   private readonly roomApiService = inject(RoomApiService);
@@ -410,6 +438,47 @@ getPolylinePoints(points: ChartPoint[]): string {
   return points.map(point => `${point.x},${point.y}`).join(' ');
 }
 
+private formatTooltipValue(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2);
+}
+
+showChartTooltip(
+  event: MouseEvent,
+  serieTitle: string,
+  metric: string,
+  point: ChartPoint,
+  unit: string
+): void {
+  this.chartTooltip = {
+    visible: true,
+    x: event.clientX + 14,
+    y: event.clientY - 14,
+    title: serieTitle,
+    metric,
+    value: `${this.formatTooltipValue(point.value)} ${unit}`,
+    timeLabel: point.timeLabel
+  };
+}
+
+moveChartTooltip(event: MouseEvent): void {
+  if (!this.chartTooltip.visible) {
+    return;
+  }
+
+  this.chartTooltip = {
+    ...this.chartTooltip,
+    x: event.clientX + 14,
+    y: event.clientY - 14
+  };
+}
+
+hideChartTooltip(): void {
+  this.chartTooltip = {
+    ...this.chartTooltip,
+    visible: false
+  };
+}
+
 private getNiceMin(values: number[]): number {
   if (!values.length) {
     return 0;
@@ -544,6 +613,150 @@ this.humidityMax = Math.max(roomHumidityMax, dataHumidityMax);
   });
 }
 
+private buildRoomAverageCharts(data: SensorDataItem[]): void {
+  if (!data.length) {
+    this.roomAverageTemperatureSeries = [];
+    this.roomAverageHumiditySeries = [];
+    return;
+  }
+
+  const sortedData = [...data].sort((a, b) => {
+    const firstTime = a.timestamp ?? 0;
+    const secondTime = b.timestamp ?? 0;
+    return firstTime - secondTime;
+  });
+
+  const groupedByTimestamp = new Map<number, SensorDataItem[]>();
+
+  for (const item of sortedData) {
+    if (item.timestamp == null) {
+      continue;
+    }
+
+    const items = groupedByTimestamp.get(item.timestamp) ?? [];
+    items.push(item);
+    groupedByTimestamp.set(item.timestamp, items);
+  }
+
+  const averageTemperatureItems: AverageChartItem[] = [];
+  const averageHumidityItems: AverageChartItem[] = [];
+
+  groupedByTimestamp.forEach((items, timestamp) => {
+    const temperatureValues = items
+      .map(item => Number(item.sicaklik))
+      .filter(value => !Number.isNaN(value));
+
+    const humidityValues = items
+      .map(item => Number(item.nem))
+      .filter(value => !Number.isNaN(value));
+
+    if (temperatureValues.length > 0) {
+      const averageTemperature =
+        temperatureValues.reduce((sum, value) => sum + value, 0) / temperatureValues.length;
+
+      averageTemperatureItems.push({
+        timestamp,
+        value: Number(averageTemperature.toFixed(2))
+      });
+    }
+
+    if (humidityValues.length > 0) {
+      const averageHumidity =
+        humidityValues.reduce((sum, value) => sum + value, 0) / humidityValues.length;
+
+      averageHumidityItems.push({
+        timestamp,
+        value: Number(averageHumidity.toFixed(2))
+      });
+    }
+  });
+
+  const temperaturePoints = this.createAverageChartPoints(
+    averageTemperatureItems,
+    this.temperatureMin,
+    this.temperatureMax
+  );
+
+  const humidityPoints = this.createAverageChartPoints(
+    averageHumidityItems,
+    this.humidityMin,
+    this.humidityMax
+  );
+
+  this.roomAverageTemperatureSeries = temperaturePoints.length
+    ? [
+        {
+          sensorId: -1,
+          sensorTitle: 'Oda Ortalama Sıcaklık',
+          points: temperaturePoints,
+          color: '#7c3aed'
+        }
+      ]
+    : [];
+
+  this.roomAverageHumiditySeries = humidityPoints.length
+    ? [
+        {
+          sensorId: -2,
+          sensorTitle: 'Oda Ortalama Nem',
+          points: humidityPoints,
+          color: '#0891b2'
+        }
+      ]
+    : [];
+}
+
+private createAverageChartPoints(
+  items: AverageChartItem[],
+  minValue: number,
+  maxValue: number
+): ChartPoint[] {
+  if (!items.length) {
+    return [];
+  }
+
+  const drawableWidth = this.chartWidth - this.chartPadding * 2;
+
+  return items.map((item, index) => {
+    const x = items.length === 1
+      ? this.chartPadding + drawableWidth / 2
+      : this.chartPadding + (index / (items.length - 1)) * drawableWidth;
+
+    const y = this.getYPosition(item.value, minValue, maxValue);
+
+    return {
+      x,
+      y,
+      value: item.value,
+      label: String(item.value),
+      timeLabel: this.formatChartTime(item.timestamp)
+    };
+  });
+}
+
+// private runRoomHistory(): void {
+//   if (this.selectedRoomId == null) {
+//     this.finishWithError('Lütfen bir oda seçin.');
+//     return;
+//   }
+
+//   this.sensorDataApiService.getByRoomId(this.selectedRoomId, this.limit).subscribe({
+//     next: (data) => {
+//       const activeSensorIds = this.getActiveSensorIdsForSelectedRoom();
+//       const filteredData = data.filter(item => activeSensorIds.has(item.sensor_id));
+
+//       console.log('roomHistory raw:', data);
+//       console.log('visibleSensors:', this.visibleSensors);
+//       console.log('roomHistory filtered:', filteredData);
+
+//       this.roomHistoryData = filteredData;
+//       this.buildRoomHistoryCharts(filteredData);
+//       this.loading = false;
+//     },
+//     error: () => this.finishWithError('Odaya ait geçmiş veriler alınamadı.')
+//   });
+// }
+
 private runRoomHistory(): void {
   if (this.selectedRoomId == null) {
     this.finishWithError('Lütfen bir oda seçin.');
@@ -561,6 +774,8 @@ private runRoomHistory(): void {
 
       this.roomHistoryData = filteredData;
       this.buildRoomHistoryCharts(filteredData);
+      this.buildRoomAverageCharts(filteredData);
+
       this.loading = false;
     },
     error: () => this.finishWithError('Odaya ait geçmiş veriler alınamadı.')
@@ -707,6 +922,8 @@ private runRoomHistory(): void {
 
     this.temperatureChartSeries = [];
     this.humidityChartSeries = [];
+    this.roomAverageTemperatureSeries = [];
+    this.roomAverageHumiditySeries = [];
     this.chartLabels = [];
   }
 
