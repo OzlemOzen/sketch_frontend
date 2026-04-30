@@ -1417,257 +1417,203 @@ button {
 
 
 
-
-
-
-
-
-/* Sensor live value final override */
+/* FINAL SENSOR VIEW OVERRIDE */
+/* Koordinat = sensör ikonunun merkezi */
+/*
 .content .sensor {
-  position: absolute;
-  z-index: 100;
-  transform: translate(-50%, -50%);
+  position: absolute !important;
+  z-index: 140 !important;
 
-  width: 72px;
-  height: 72px;
-  min-width: 72px;
-  min-height: 72px;
-  max-width: 72px;
-  max-height: 72px;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
 
-  border-radius: 50%;
+  padding: 0 !important;
+  margin: 0 !important;
 
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
 
-  padding: 6px;
-  box-sizing: border-box;
-
-  text-align: center;
-  overflow: hidden;
+  transform: none !important;
+  overflow: visible !important;
   pointer-events: none;
+}
+  */
+.content .sensor {
+  position: absolute !important;
+  z-index: 140 !important;
 
-  border: 2px solid transparent;
-  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
 
-  font-weight: 700;
-  line-height: 1;
+  padding: 0 !important;
+  margin: 0 !important;
+
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+
+  transform: none !important;
+  overflow: visible !important;
+  pointer-events: auto;
 }
 
-.content .sensor-name {
-  max-width: 56px;
-  font-size: 9px;
-  line-height: 1;
-  margin-bottom: 2px;
+/* Sensör adı ve değerler ikonun üstünde durur */
+/*
+.content .sensor-info {
+  position: absolute !important;
+  left: 0 !important;
+  bottom: 6px !important;
+  transform: translateX(-50%) !important;
 
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+
+  min-width: 64px;
+  text-align: center;
+  line-height: 1.05;
+}
+  */
+
+.content .sensor-info {
+  position: absolute !important;
+  left: 0 !important;
+  bottom: 14px !important;
+  transform: translateX(-50%) translateY(4px) !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+
+  min-width: 64px;
+  padding: 4px 6px;
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.16);
+
+  text-align: center;
+  line-height: 1.05;
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+
+  pointer-events: none;
+}
+
+.content .sensor:hover .sensor-info {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0) !important;
 }
 
 .content .sensor-icon,
 .content .sensor .material-symbols-outlined {
-  font-size: 18px;
-  line-height: 1;
-  margin: 1px 0 3px 0;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+
+  width: 24px !important;
+  height: 24px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  transform: translate(-50%, -50%) !important;
+
+  font-size: 22px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+
+  cursor: pointer;
+  pointer-events: auto;
 }
 
+/* Sensör adı */
+.content .sensor-name {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  line-height: 1.05 !important;
+  margin-bottom: 4px !important;
+  white-space: nowrap !important;
+
+  color: #111827 !important;
+  text-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.95),
+    0 -1px 2px rgba(255, 255, 255, 0.95);
+}
+
+/* Sensör değerleri */
 .content .sensor-live-values {
-  font-size: 8px;
-  line-height: 1.05;
-  white-space: nowrap;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 1px !important;
+
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  line-height: 1.05 !important;
+  white-space: nowrap !important;
+
+  color: #111827 !important;
+  text-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.95),
+    0 -1px 2px rgba(255, 255, 255, 0.95);
 }
 
 .content .sensor-live-values div {
-  line-height: 1.05;
+  line-height: 1.05 !important;
 }
 
-
-.content .sensor-green {
-  background-color: #ecfdf5;
-  border-color: #22c55e;
-  color: #166534;
-}
-
-.content .sensor-yellow {
-  background-color: #fffbeb;
-  border-color: #eab308;
-  color: #854d0e;
-}
-
-.content .sensor-red {
-  background-color: #fef2f2;
-  border-color: #ef4444;
-  color: #991b1b;
-}
-
-.content .sensor-unknown {
-  background-color: #f8fafc;
-  border-color: #94a3b8;
-  color: #475569;
-}
-
-
-.content .sensor {
-  position: absolute;
-  z-index: 100;
-  transform: translate(-50%, -50%);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  border-radius: 0;
-
-  padding: 0;
-  margin: 0;
-  width: auto;
-  height: auto;
-  min-width: 0;
-  min-height: 0;
-
-  text-align: center;
-  line-height: 1.1;
-  pointer-events: none;
-}
-
-.content .sensor-name {
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
-}
-
+/* İkon tam sensor.x / sensor.y koordinatının merkezinde */
 .content .sensor-icon,
 .content .sensor .material-symbols-outlined {
-  font-size: 18px;
-  line-height: 1;
-  margin-bottom: 3px;
-}
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
 
-.content .sensor-live-values {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1.05;
-  white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
-}
+  width: 24px !important;
+  height: 24px !important;
 
-.content .sensor-live-values div {
-  line-height: 1.05;
-}
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 
+  transform: translate(-50%, -50%) !important;
 
-.content .sensor-green {
-  background: transparent;
-  border: none;
-  color: #15803d;
-}
-
-.content .sensor-yellow {
-  background: transparent;
-  border: none;
-  color: #ca8a04;
-}
-
-.content .sensor-red {
-  background: transparent;
-  border: none;
-  color: #dc2626;
-}
-
-.content .sensor-unknown {
-  background: transparent;
-  border: none;
-  color: #475569;
-}
-
-
-
-.content .sensor {
-  position: absolute;
-  z-index: 100;
-  transform: translate(-50%, -50%);
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  border-radius: 0;
-
-  padding: 0;
-  margin: 0;
-  width: auto;
-  height: auto;
-  min-width: 0;
-  min-height: 0;
-
-  text-align: center;
-  line-height: 1.1;
-  pointer-events: none;
-}
-
-
-.content .sensor-name {
-  font-size: 10px;
-  font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
-}
-
-.content .sensor-icon,
-.content .sensor .material-symbols-outlined {
-  font-size: 20px;
-  line-height: 1;
-  margin-bottom: 3px;
-  transition: transform 0.2s ease, opacity 0.2s ease;
-}
-
-.content .sensor-live-values {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1px;
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1.05;
-  white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
+  font-size: 22px !important;
+  line-height: 1 !important;
+  margin: 0 !important;
 }
 
 
 .content .icon-green {
-  color: #16a34a;
+  color: #16a34a !important;
 }
 
 .content .icon-yellow {
-  color: #ca8a04;
+  color: #ca8a04 !important;
 }
 
 .content .icon-red {
-  color: #dc2626;
+  color: #dc2626 !important;
 }
 
 .content .icon-unknown {
-  color: #64748b;
+  color: #64748b !important;
 }
 
 .content .blink-yellow {
@@ -1682,14 +1628,12 @@ button {
   0%,
   100% {
     opacity: 1;
-    transform: scale(1);
-    text-shadow: 0 0 0 rgba(234, 179, 8, 0);
+    filter: drop-shadow(0 0 0 rgba(234, 179, 8, 0));
   }
 
   50% {
     opacity: 0.45;
-    transform: scale(1.12);
-    text-shadow: 0 0 10px rgba(234, 179, 8, 0.55);
+    filter: drop-shadow(0 0 8px rgba(234, 179, 8, 0.75));
   }
 }
 
@@ -1697,14 +1641,133 @@ button {
   0%,
   100% {
     opacity: 1;
-    transform: scale(1);
-    text-shadow: 0 0 0 rgba(239, 68, 68, 0);
+    filter: drop-shadow(0 0 0 rgba(239, 68, 68, 0));
   }
 
   50% {
-    opacity: 0.3;
-    transform: scale(1.18);
-    text-shadow: 0 0 12px rgba(239, 68, 68, 0.75);
+    opacity: 0.35;
+    filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.85));
   }
 }
 
+
+
+
+
+
+.room-info {
+  position: absolute;
+  z-index: 4;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 82px;
+  padding: 4px 8px;
+  border-radius: 8px;
+
+  background: rgba(255, 255, 255, 0.82);
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.room-title-text {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #7f1d1d;
+}
+
+.room-average-values {
+  margin-top: 4px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.05;
+  color: #111827;
+}
+
+.room-average-values div {
+  line-height: 1.05;
+}
+
+
+
+.restricted-room-info {
+  position: relative;
+  z-index: 2;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 100%;
+
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.restricted-room-title {
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: #111827;
+  text-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.95),
+    0 -1px 2px rgba(255, 255, 255, 0.95);
+}
+
+.restricted-room-average-values {
+  margin-top: 4px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: #111827;
+  text-shadow:
+    0 1px 2px rgba(255, 255, 255, 0.95),
+    0 -1px 2px rgba(255, 255, 255, 0.95);
+}
+
+.restricted-room-average-values div {
+  line-height: 1.05;
+}
+
+
+
+
+.restrictedRoom {
+  overflow: hidden;
+}
+
+.restricted-room-info {
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+.restricted-room-title,
+.restricted-room-average-values {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.restricted-room-average-values {
+  font-size: 9px;
+}

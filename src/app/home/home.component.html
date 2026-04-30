@@ -187,14 +187,36 @@
         [style.width.px]="(room.width ?? 0)"
         [style.height.px]="(room.height ?? 0)"
       >
-        <span
+        <!-- <span
         class="room-title"
         [style.left.px]="room.titleLeft ?? 8"
         [style.top.px]="room.titleTop ?? 8">
         {{ room.title }}
-      </span>
+      </span> -->
+      <div
+  class="room-info"
+  [style.left.px]="room.titleLeft ?? 8"
+  [style.top.px]="room.titleTop ?? 8"
+>
+  <div class="room-title-text">
+    {{ room.title }}
+  </div>
 
-        <div
+  <div
+    class="room-average-values"
+    *ngIf="!room.is_corridor && (room.avgTemperature != null || room.avgHumidity != null)"
+  >
+    <div *ngIf="room.avgTemperature != null">
+      {{ room.avgTemperature | number:'1.1-1' }}°C
+    </div>
+
+    <div *ngIf="room.avgHumidity != null">
+      {{ room.avgHumidity | number:'1.1-1' }}%
+    </div>
+  </div>
+</div>
+
+        <!-- <div
           *ngFor="let restrictedRoom of room.restrictedAreas; trackBy: trackByRestrictedRoom"
           class="restrictedRoom"
           [ngClass]="{
@@ -209,7 +231,40 @@
           [style.height.px]="restrictedRoom.height"
         >
           <span class="restricted-room-title">{{ restrictedRoom.title }}</span>
-        </div>
+        </div> -->
+        <div
+  *ngFor="let restrictedRoom of room.restrictedAreas; trackBy: trackByRestrictedRoom"
+  class="restrictedRoom"
+  [ngClass]="{
+    'restrictedRoom-normal': restrictedRoom.statusColor === 'normal',
+    'restrictedRoom-warning': restrictedRoom.statusColor === 'warning',
+    'restrictedRoom-critical': restrictedRoom.statusColor === 'critical',
+    'restrictedRoom-unknown': restrictedRoom.statusColor === 'unknown'
+  }"
+  [style.left.px]="restrictedRoom.x - (room.x ?? 0)"
+  [style.top.px]="(room.y ?? 0) - restrictedRoom.y"
+  [style.width.px]="restrictedRoom.width"
+  [style.height.px]="restrictedRoom.height"
+>
+  <div class="restricted-room-info">
+    <div class="restricted-room-title">
+      {{ restrictedRoom.title }}
+    </div>
+
+    <div
+      class="restricted-room-average-values"
+      *ngIf="restrictedRoom.avgTemperature != null || restrictedRoom.avgHumidity != null"
+    >
+      <div *ngIf="restrictedRoom.avgTemperature != null">
+        {{ restrictedRoom.avgTemperature | number:'1.1-1' }}°C
+      </div>
+
+      <div *ngIf="restrictedRoom.avgHumidity != null">
+        {{ restrictedRoom.avgHumidity | number:'1.1-1' }}%
+      </div>
+    </div>
+  </div>
+</div>
       </div>
 <div
   *ngFor="let sensor of visibleSensors; trackBy: trackBySensor"
@@ -217,8 +272,21 @@
   [style.left.px]="sensor.x"
   [style.top.px]="-sensor.y"
 >
-  <div class="sensor-name">
-    {{ sensor.title }}
+  <div class="sensor-info">
+    <div class="sensor-name">
+      {{ sensor.title }}
+    </div>
+
+    <div class="sensor-live-values">
+      <ng-container *ngIf="sensor.sicaklik != null || sensor.nem != null; else noSensorLiveData">
+        <div>{{ sensor.sicaklik != null ? (sensor.sicaklik | number:'1.1-1') : '-' }}°C</div>
+        <div>{{ sensor.nem != null ? (sensor.nem | number:'1.1-1') : '-' }}%</div>
+      </ng-container>
+
+      <ng-template #noSensorLiveData>
+        <div>Veri yok</div>
+      </ng-template>
+    </div>
   </div>
 
   <span
@@ -234,17 +302,6 @@
   >
     {{ getSensorIcon(sensor) }}
   </span>
-
-  <div class="sensor-live-values">
-    <ng-container *ngIf="sensor.sicaklik != null || sensor.nem != null; else noSensorLiveData">
-      <div>{{ sensor.sicaklik != null ? (sensor.sicaklik | number:'1.1-1') : '-' }}°C</div>
-      <div>{{ sensor.nem != null ? (sensor.nem | number:'1.1-1') : '-' }}%</div>
-    </ng-container>
-
-    <ng-template #noSensorLiveData>
-      <div>Veri yok</div>
-    </ng-template>
-  </div>
 </div>
     </div>
   </div>
