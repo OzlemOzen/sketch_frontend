@@ -98,6 +98,9 @@ type Rect = {
 };
 
 
+type SensorStatus = 'green' | 'yellow' | 'red' | 'unknown';
+
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -183,6 +186,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   sensorUpdateFormData: SensorFormValue = this.createEmptySensorForm();
 
   floors: { floor_number: number }[] = [];
+
+  
 
 
 private normalizeRect(rect: Rect): Rect | null {
@@ -357,6 +362,137 @@ get totalProblemSensorCount(): number {
   ).length;
 }
 
+private getRoomBySensor(sensor: SensorViewModel): RoomViewModel | undefined {
+  return this.rooms.find(room => room.id === sensor.room_id);
+}
+
+
+private evaluateMetricStatus(
+  currentValue: number | null | undefined,
+  minValue: number | null | undefined,
+  maxValue: number | null | undefined,
+  optimumValue: number | null | undefined
+): SensorStatus {
+  if (currentValue == null) {
+    return 'unknown';
+  }
+
+  if (minValue != null && currentValue < minValue) {
+    return 'red';
+  }
+
+  if (maxValue != null && currentValue > maxValue) {
+    return 'red';
+  }
+
+  if (optimumValue == null) {
+    return 'green';
+  }
+
+  const safeMin = minValue ?? optimumValue;
+  const safeMax = maxValue ?? optimumValue;
+  const range = Math.max(safeMax - safeMin, 1);
+  const warningBand = range * 0.2;
+
+  if (Math.abs(currentValue - optimumValue) <= warningBand) {
+    return 'green';
+  }
+
+  return 'yellow';
+}
+
+private calculateSensorStatusFromRoom(sensor: SensorViewModel): SensorStatus {
+  const room = this.getRoomBySensor(sensor);
+
+  if (!room) {
+    return 'unknown';
+  }
+
+  const temperatureStatus = this.evaluateMetricStatus(
+    sensor.sicaklik ?? null,
+    room.temperature_min_value ?? null,
+    room.temperature_max_value ?? null,
+    room.temperature_optimum_value ?? null
+  );
+
+  const humidityStatus = this.evaluateMetricStatus(
+    sensor.nem ?? null,
+    room.humidity_min_value ?? null,
+    room.humidity_max_value ?? null,
+    room.humidity_optimum_value ?? null
+  );
+
+  if (temperatureStatus === 'red' || humidityStatus === 'red') {
+    return 'red';
+  }
+
+  if (temperatureStatus === 'yellow' || humidityStatus === 'yellow') {
+    return 'yellow';
+  }
+
+  if (temperatureStatus === 'green' || humidityStatus === 'green') {
+    return 'green';
+  }
+
+  return 'unknown';
+}
+
+handleSensorStreamMessage(message: any): void {
+  if (!message || typeof message.sensor_id !== 'number') {
+    return;
+  }
+
+  const index = this.sensors.findIndex(sensor => sensor.id === message.sensor_id);
+
+  if (index === -1) {
+    console.warn('Sensör bulunamadı:', message.sensor_id);
+    return;
+  }
+
+  const currentSensor = this.sensors[index];
+
+  const sicaklik =
+    typeof message.sicaklik === 'number'
+      ? message.sicaklik
+      : currentSensor.sicaklik ?? null;
+
+  const nem =
+    typeof message.nem === 'number'
+      ? message.nem
+      : currentSensor.nem ?? null;
+
+  const lastUpdated =
+    typeof message.timestamp === 'number'
+      ? message.timestamp
+      : currentSensor.lastUpdated ?? null;
+
+  const updatedSensor: SensorViewModel = {
+    ...currentSensor,
+    sicaklik,
+    nem,
+    lastUpdated,
+    current_value: sicaklik,
+  };
+
+  updatedSensor.statusColor = this.calculateSensorStatusFromRoom(updatedSensor);
+
+  this.sensors[index] = updatedSensor;
+  this.sensors = [...this.sensors];
+
+  if (this.isAnyFormOpen) {
+    return;
+  }
+
+  this.refreshRoomStatuses();
+  this.refreshFaultySensors();
+}
+
+private updateAllSensorStatuses(): void {
+  this.sensors = this.sensors.map(sensor => ({
+    ...sensor,
+    statusColor: this.calculateSensorStatusFromRoom(sensor)
+  }));
+}
 
 upsertFaultySensor(item: FaultySensorItem): void {
   const index = this.faultySensors.findIndex(x => x.sensorId === item.sensorId);
@@ -472,7 +608,7 @@ get isAnyFormOpen(): boolean {
   );
 }
 
-
+/*
 handleSensorStreamMessage(message: any): void {
   if (!message || typeof message.sensor_id !== 'number') {
     return;
@@ -519,6 +655,7 @@ console.log('this.sensors ids:', this.sensors.map(s => s.id));
   this.refreshRoomStatuses();
   this.refreshFaultySensors();
 }
+*/
 
 
 get problematicRooms(): RoomViewModel[] {

@@ -214,18 +214,37 @@
 <div
   *ngFor="let sensor of visibleSensors; trackBy: trackBySensor"
   class="sensor"
-  [ngClass]="{
-    'sensor-green': sensor.statusColor === 'green',
-    'sensor-yellow': sensor.statusColor === 'yellow',
-    'sensor-red': sensor.statusColor === 'red',
-    'sensor-unknown': sensor.statusColor === 'unknown'
-  }"
   [style.left.px]="sensor.x"
   [style.top.px]="-sensor.y"
 >
-  <span class="sensor-name">{{ sensor.title }}</span>
-  
-  <span class="material-symbols-outlined">{{ getSensorIcon(sensor) }}</span>
+  <div class="sensor-name">
+    {{ sensor.title }}
+  </div>
+
+  <span
+    class="material-symbols-outlined sensor-icon"
+    [ngClass]="{
+      'icon-green': sensor.statusColor === 'green',
+      'icon-yellow': sensor.statusColor === 'yellow',
+      'icon-red': sensor.statusColor === 'red',
+      'icon-unknown': sensor.statusColor === 'unknown',
+      'blink-yellow': sensor.statusColor === 'yellow',
+      'blink-red': sensor.statusColor === 'red'
+    }"
+  >
+    {{ getSensorIcon(sensor) }}
+  </span>
+
+  <div class="sensor-live-values">
+    <ng-container *ngIf="sensor.sicaklik != null || sensor.nem != null; else noSensorLiveData">
+      <div>{{ sensor.sicaklik != null ? (sensor.sicaklik | number:'1.1-1') : '-' }}°C</div>
+      <div>{{ sensor.nem != null ? (sensor.nem | number:'1.1-1') : '-' }}%</div>
+    </ng-container>
+
+    <ng-template #noSensorLiveData>
+      <div>Veri yok</div>
+    </ng-template>
+  </div>
 </div>
     </div>
   </div>
