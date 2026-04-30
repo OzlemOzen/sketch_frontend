@@ -121,6 +121,176 @@
     </table>
   </div>
 
+
+  <div *ngIf="!loading && analysisType === 'room-history' && roomHistoryData.length > 0" class="result-panel">
+  <h2>Odaya Ait Geçmiş Veriler</h2>
+
+  <div class="chart-section">
+    <h3>Sıcaklık Geçmişi</h3>
+
+    <div class="chart-legend">
+      <span *ngFor="let serie of temperatureChartSeries" class="legend-item">
+        <span class="legend-color" [style.background]="serie.color"></span>
+        {{ serie.sensorTitle }}
+      </span>
+    </div>
+
+    <div class="svg-chart-wrapper">
+      <svg
+        class="svg-chart"
+        [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+        preserveAspectRatio="none"
+      >
+        <line
+          [attr.x1]="chartPadding"
+          [attr.y1]="chartPadding"
+          [attr.x2]="chartPadding"
+          [attr.y2]="chartHeight - chartPadding"
+          class="axis-line"
+        ></line>
+
+        <line
+          [attr.x1]="chartPadding"
+          [attr.y1]="chartHeight - chartPadding"
+          [attr.x2]="chartWidth - chartPadding"
+          [attr.y2]="chartHeight - chartPadding"
+          class="axis-line"
+        ></line>
+
+        <line
+          [attr.x1]="chartPadding"
+          [attr.y1]="temperatureOptimumY"
+          [attr.x2]="chartWidth - chartPadding"
+          [attr.y2]="temperatureOptimumY"
+          class="grid-line optimum-line"
+        ></line>
+
+        <text [attr.x]="8" [attr.y]="chartPadding + 4" class="axis-label">
+          <!-- {{ temperatureMax }} -->
+            {{ roomTemperatureMax }}
+        </text>
+
+        <!-- <text [attr.x]="8" [attr.y]="chartHeight / 2 + 4" class="axis-label">
+           {{ temperatureMiddleValue }} 
+            {{ roomTemperatureOptimum }}
+        </text> -->
+        <text [attr.x]="8" [attr.y]="temperatureOptimumY + 4" class="axis-label">
+          {{ roomTemperatureOptimum }}
+        </text>
+
+        <text [attr.x]="8" [attr.y]="chartHeight - chartPadding + 4" class="axis-label">
+          <!-- {{ temperatureMin }} -->
+            {{ roomTemperatureMin }}
+        </text>
+
+        <g *ngFor="let serie of temperatureChartSeries">
+          <polyline
+            class="chart-line"
+            [attr.points]="getPolylinePoints(serie.points)"
+            [attr.stroke]="serie.color"
+          ></polyline>
+
+          <circle
+            *ngFor="let point of serie.points"
+            class="chart-point"
+            [attr.cx]="point.x"
+            [attr.cy]="point.y"
+            r="4"
+            [attr.fill]="serie.color"
+          >
+            <title>
+              {{ serie.sensorTitle }} | Sıcaklık: {{ point.value }} | {{ point.timeLabel }}
+            </title>
+          </circle>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <h3>Nem Geçmişi</h3>
+
+    <div class="chart-legend">
+      <span *ngFor="let serie of humidityChartSeries" class="legend-item">
+        <span class="legend-color" [style.background]="serie.color"></span>
+        {{ serie.sensorTitle }}
+      </span>
+    </div>
+
+    <div class="svg-chart-wrapper">
+      <svg
+        class="svg-chart"
+        [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+        preserveAspectRatio="none"
+      >
+        <line
+          [attr.x1]="chartPadding"
+          [attr.y1]="chartPadding"
+          [attr.x2]="chartPadding"
+          [attr.y2]="chartHeight - chartPadding"
+          class="axis-line"
+        ></line>
+
+        <line
+          [attr.x1]="chartPadding"
+          [attr.y1]="chartHeight - chartPadding"
+          [attr.x2]="chartWidth - chartPadding"
+          [attr.y2]="chartHeight - chartPadding"
+          class="axis-line"
+        ></line>
+
+        <line
+          [attr.x1]="chartPadding"
+          [attr.y1]="humidityOptimumY"
+          [attr.x2]="chartWidth - chartPadding"
+          [attr.y2]="humidityOptimumY"
+          class="grid-line optimum-line"
+        ></line>
+
+        <text [attr.x]="8" [attr.y]="chartPadding + 4" class="axis-label">
+          <!-- {{ humidityMax }} -->
+            {{ roomHumidityMax }}
+        </text>
+
+        <!-- <text [attr.x]="8" [attr.y]="chartHeight / 2 + 4" class="axis-label">
+           {{ humidityMiddleValue }}
+            {{ roomHumidityOptimum }}
+        </text> -->
+        <text [attr.x]="8" [attr.y]="humidityOptimumY + 4" class="axis-label">
+          {{ roomHumidityOptimum }}
+        </text>
+
+        <text [attr.x]="8" [attr.y]="chartHeight - chartPadding + 4" class="axis-label">
+          <!-- {{ humidityMin }} -->
+            {{ roomHumidityMin }}
+        </text>
+
+        <g *ngFor="let serie of humidityChartSeries">
+          <polyline
+            class="chart-line"
+            [attr.points]="getPolylinePoints(serie.points)"
+            [attr.stroke]="serie.color"
+          ></polyline>
+
+          <circle
+            *ngFor="let point of serie.points"
+            class="chart-point"
+            [attr.cx]="point.x"
+            [attr.cy]="point.y"
+            r="4"
+            [attr.fill]="serie.color"
+          >
+            <title>
+              {{ serie.sensorTitle }} | Nem: {{ point.value }} | {{ point.timeLabel }}
+            </title>
+          </circle>
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+
   <div *ngIf="!loading && analysisType === 'room-history' && roomHistoryData.length > 0" class="result-panel">
     <h2>Odaya Ait Geçmiş Veriler</h2>
     <table>
@@ -143,6 +313,7 @@
       </tbody>
     </table>
   </div>
+  
 
   <div *ngIf="!loading && analysisType === 'sensor-latest' && sensorLatestData" class="result-panel">
     <h2>Sensöre Ait Son Veri</h2>

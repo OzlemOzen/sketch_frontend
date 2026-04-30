@@ -21,6 +21,22 @@ type AnalysisType =
   | 'sensor-last-n'
   | 'sensor-range';
 
+
+type ChartPoint = {
+  x: number;
+  y: number;
+  value: number;
+  label: string;
+  timeLabel: string;
+};
+
+type ChartSeries = {
+  sensorId: number;
+  sensorTitle: string;
+  points: ChartPoint[];
+  color: string;
+};
+
 @Component({
   selector: 'app-sensor-data-analysis',
   standalone: true,
@@ -29,6 +45,20 @@ type AnalysisType =
   styleUrls: ['./sensor-data-analysis.component.scss']
 })
 export class SensorDataAnalysisComponent implements OnInit {
+
+  temperatureChartSeries: ChartSeries[] = [];
+  humidityChartSeries: ChartSeries[] = [];
+  
+  chartLabels: string[] = [];
+  chartWidth = 1000;
+  chartHeight = 320;
+  chartPadding = 48;
+  
+  temperatureMin = 0;
+  temperatureMax = 100;
+  humidityMin = 0;
+  humidityMax = 100;
+
   private readonly buildingApiService = inject(BuildingApiService);
   private readonly roomApiService = inject(RoomApiService);
   private readonly sensorApiService = inject(SensorApiService);
@@ -276,27 +306,266 @@ onRoomChange(roomId: number | null): void {
     });
   }
 
-  private runRoomHistory(): void {
-    if (this.selectedRoomId == null) {
-      this.finishWithError('Lütfen bir oda seçin.');
-      return;
-    }
+//   private runRoomHistory(): void {
+//     if (this.selectedRoomId == null) {
+//       this.finishWithError('Lütfen bir oda seçin.');
+//       return;
+//     }
 
-    this.sensorDataApiService.getByRoomId(this.selectedRoomId, this.limit).subscribe({
-      next: (data) => {
-  const activeSensorIds = this.getActiveSensorIdsForSelectedRoom();
-  const filteredData = data.filter(item => activeSensorIds.has(item.sensor_id));
+//     this.sensorDataApiService.getByRoomId(this.selectedRoomId, this.limit).subscribe({
+//       next: (data) => {
+//   const activeSensorIds = this.getActiveSensorIdsForSelectedRoom();
+//   const filteredData = data.filter(item => activeSensorIds.has(item.sensor_id));
 
-  console.log('roomHistory raw:', data);
-  console.log('visibleSensors:', this.visibleSensors);
-  console.log('roomHistory filtered:', filteredData);
+//   console.log('roomHistory raw:', data);
+//   console.log('visibleSensors:', this.visibleSensors);
+//   console.log('roomHistory filtered:', filteredData);
 
-  this.roomHistoryData = filteredData;
-  this.loading = false;
-},
-      error: () => this.finishWithError('Odaya ait geçmiş veriler alınamadı.')
-    });
+//   this.roomHistoryData = filteredData;
+//   this.loading = false;
+// },
+//       error: () => this.finishWithError('Odaya ait geçmiş veriler alınamadı.')
+//     });
+//   }
+
+get temperatureMiddleValue(): number {
+  return Number(((this.temperatureMin + this.temperatureMax) / 2).toFixed(1));
+}
+
+get humidityMiddleValue(): number {
+  return Number(((this.humidityMin + this.humidityMax) / 2).toFixed(1));
+}
+
+getYPosition(value: number, minValue: number, maxValue: number): number {
+  if (maxValue === minValue) {
+    return this.chartHeight / 2;
   }
+
+  const drawableHeight = this.chartHeight - this.chartPadding * 2;
+  const ratio = (value - minValue) / (maxValue - minValue);
+
+  return this.chartPadding + drawableHeight - ratio * drawableHeight;
+}
+
+get temperatureOptimumY(): number {
+  return this.getYPosition(
+    this.roomTemperatureOptimum,
+    this.temperatureMin,
+    this.temperatureMax
+  );
+}
+
+get humidityOptimumY(): number {
+  return this.getYPosition(
+    this.roomHumidityOptimum,
+    this.humidityMin,
+    this.humidityMax
+  );
+}
+
+private createChartPoints(
+  sensorItems: SensorDataItem[],
+  timestamps: number[],
+  valueKey: 'sicaklik' | 'nem',
+  minValue: number,
+  maxValue: number
+): ChartPoint[] {
+  const drawableWidth = this.chartWidth - this.chartPadding * 2;
+  const drawableHeight = this.chartHeight - this.chartPadding * 2;
+
+  return timestamps
+    .map((timestamp, index) => {
+      const item = sensorItems.find(sensorItem => sensorItem.timestamp === timestamp);
+
+      if (!item) {
+        return null;
+      }
+
+      const value = Number(item[valueKey]);
+
+      if (Number.isNaN(value)) {
+        return null;
+      }
+
+      const x = timestamps.length === 1
+        ? this.chartPadding + drawableWidth / 2
+        : this.chartPadding + (index / (timestamps.length - 1)) * drawableWidth;
+
+      const range = maxValue - minValue || 1;
+
+      const y = this.chartPadding + drawableHeight - ((value - minValue) / range) * drawableHeight;
+
+      return {
+        x,
+        y,
+        value,
+        label: String(value),
+        timeLabel: this.formatChartTime(timestamp)
+      };
+    })
+    .filter((point): point is ChartPoint => point !== null);
+}
+
+getPolylinePoints(points: ChartPoint[]): string {
+  return points.map(point => `${point.x},${point.y}`).join(' ');
+}
+
+private getNiceMin(values: number[]): number {
+  if (!values.length) {
+    return 0;
+  }
+
+  const min = Math.min(...values);
+  return Math.floor(min - 5);
+}
+
+private getNiceMax(values: number[]): number {
+  if (!values.length) {
+    return 100;
+  }
+
+  const max = Math.max(...values);
+  return Math.ceil(max + 5);
+}
+
+private formatChartTime(timestamp: number): string {
+  return new Date(timestamp * 1000).toLocaleTimeString('tr-TR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
+private getChartColor(index: number): string {
+  const colors = [
+    '#0a3b9e',
+    '#dc2626',
+    '#16a34a',
+    '#f59e0b',
+    '#7c3aed',
+    '#0891b2',
+    '#be123c',
+    '#4b5563'
+  ];
+
+  return colors[index % colors.length];
+}
+
+private buildRoomHistoryCharts(data: SensorDataItem[]): void {
+  if (!data.length) {
+    this.temperatureChartSeries = [];
+    this.humidityChartSeries = [];
+    this.chartLabels = [];
+    return;
+  }
+
+  const sortedData = [...data].sort((a, b) => {
+    const firstTime = a.timestamp ?? 0;
+    const secondTime = b.timestamp ?? 0;
+    return firstTime - secondTime;
+  });
+
+  const timestamps = [...new Set(
+    sortedData
+      .map(item => item.timestamp)
+      .filter((timestamp): timestamp is number => timestamp !== null && timestamp !== undefined)
+  )];
+
+  this.chartLabels = timestamps.map(timestamp => this.formatChartTime(timestamp));
+
+  const temperatureValues = sortedData
+    .map(item => Number(item.sicaklik))
+    .filter(value => !Number.isNaN(value));
+
+  const humidityValues = sortedData
+    .map(item => Number(item.nem))
+    .filter(value => !Number.isNaN(value));
+
+    /*
+  this.temperatureMin = this.getNiceMin(temperatureValues);
+  this.temperatureMax = this.getNiceMax(temperatureValues);
+
+  this.humidityMin = this.getNiceMin(humidityValues);
+  this.humidityMax = this.getNiceMax(humidityValues);
+  */
+
+  const selectedRoom = this.selectedRoom;
+
+const dataTemperatureMin = this.getNiceMin(temperatureValues);
+const dataTemperatureMax = this.getNiceMax(temperatureValues);
+
+const dataHumidityMin = this.getNiceMin(humidityValues);
+const dataHumidityMax = this.getNiceMax(humidityValues);
+
+const roomTemperatureMin = selectedRoom?.temperature_min_value != null
+  ? Number(selectedRoom.temperature_min_value)
+  : dataTemperatureMin;
+
+const roomTemperatureMax = selectedRoom?.temperature_max_value != null
+  ? Number(selectedRoom.temperature_max_value)
+  : dataTemperatureMax;
+
+const roomHumidityMin = selectedRoom?.humidity_min_value != null
+  ? Number(selectedRoom.humidity_min_value)
+  : dataHumidityMin;
+
+const roomHumidityMax = selectedRoom?.humidity_max_value != null
+  ? Number(selectedRoom.humidity_max_value)
+  : dataHumidityMax;
+
+this.temperatureMin = Math.min(roomTemperatureMin, dataTemperatureMin);
+this.temperatureMax = Math.max(roomTemperatureMax, dataTemperatureMax);
+
+this.humidityMin = Math.min(roomHumidityMin, dataHumidityMin);
+this.humidityMax = Math.max(roomHumidityMax, dataHumidityMax);
+
+  const sensorIds = [...new Set(sortedData.map(item => item.sensor_id))];
+
+  this.temperatureChartSeries = sensorIds.map((sensorId, index) => {
+    const sensorItems = sortedData.filter(item => item.sensor_id === sensorId);
+
+    return {
+      sensorId,
+      sensorTitle: this.getSensorTitle(sensorId),
+      color: this.getChartColor(index),
+      points: this.createChartPoints(sensorItems, timestamps, 'sicaklik', this.temperatureMin, this.temperatureMax)
+    };
+  });
+
+  this.humidityChartSeries = sensorIds.map((sensorId, index) => {
+    const sensorItems = sortedData.filter(item => item.sensor_id === sensorId);
+
+    return {
+      sensorId,
+      sensorTitle: this.getSensorTitle(sensorId),
+      color: this.getChartColor(index),
+      points: this.createChartPoints(sensorItems, timestamps, 'nem', this.humidityMin, this.humidityMax)
+    };
+  });
+}
+
+private runRoomHistory(): void {
+  if (this.selectedRoomId == null) {
+    this.finishWithError('Lütfen bir oda seçin.');
+    return;
+  }
+
+  this.sensorDataApiService.getByRoomId(this.selectedRoomId, this.limit).subscribe({
+    next: (data) => {
+      const activeSensorIds = this.getActiveSensorIdsForSelectedRoom();
+      const filteredData = data.filter(item => activeSensorIds.has(item.sensor_id));
+
+      console.log('roomHistory raw:', data);
+      console.log('visibleSensors:', this.visibleSensors);
+      console.log('roomHistory filtered:', filteredData);
+
+      this.roomHistoryData = filteredData;
+      this.buildRoomHistoryCharts(filteredData);
+      this.loading = false;
+    },
+    error: () => this.finishWithError('Odaya ait geçmiş veriler alınamadı.')
+  });
+}
 
   private runSensorLatest(): void {
     if (this.selectedSensorId == null) {
@@ -435,6 +704,10 @@ onRoomChange(roomId: number | null): void {
     this.sensorRangeData = [];
     this.roomAverageTemp = null;
     this.roomAverageHumidity = null;
+
+    this.temperatureChartSeries = [];
+    this.humidityChartSeries = [];
+    this.chartLabels = [];
   }
 
   private finishWithError(message: string): void {
@@ -531,6 +804,50 @@ getSensorTitle(sensorId: number): string {
 
 private getActiveSensorIdsForSelectedRoom(): Set<number> {
   return new Set(this.visibleSensors.map(sensor => sensor.id));
+}
+
+get selectedRoom(): Room | undefined {
+  if (this.selectedRoomId == null) {
+    return undefined;
+  }
+
+  return this.visibleRooms.find(room => room.id === this.selectedRoomId);
+}
+
+get roomTemperatureMin(): number {
+  return this.selectedRoom?.temperature_min_value != null
+    ? Number(this.selectedRoom.temperature_min_value)
+    : this.temperatureMin;
+}
+
+get roomTemperatureOptimum(): number {
+  return this.selectedRoom?.temperature_optimum_value != null
+    ? Number(this.selectedRoom.temperature_optimum_value)
+    : this.temperatureMiddleValue;
+}
+
+get roomTemperatureMax(): number {
+  return this.selectedRoom?.temperature_max_value != null
+    ? Number(this.selectedRoom.temperature_max_value)
+    : this.temperatureMax;
+}
+
+get roomHumidityMin(): number {
+  return this.selectedRoom?.humidity_min_value != null
+    ? Number(this.selectedRoom.humidity_min_value)
+    : this.humidityMin;
+}
+
+get roomHumidityOptimum(): number {
+  return this.selectedRoom?.humidity_optimum_value != null
+    ? Number(this.selectedRoom.humidity_optimum_value)
+    : this.humidityMiddleValue;
+}
+
+get roomHumidityMax(): number {
+  return this.selectedRoom?.humidity_max_value != null
+    ? Number(this.selectedRoom.humidity_max_value)
+    : this.humidityMax;
 }
 
 }
