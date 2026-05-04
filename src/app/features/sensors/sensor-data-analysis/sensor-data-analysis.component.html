@@ -125,9 +125,142 @@
   <div *ngIf="!loading && analysisType === 'room-history' && roomHistoryData.length > 0" class="result-panel">
   <h2>Odaya Ait Geçmiş Veriler</h2>
 
+  <div class="room-threshold-card">
+  <div class="threshold-card-header">
+    <h3>Oda Eşik Değerleri</h3>
+    <span *ngIf="selectedRoom">{{ selectedRoom.title }}</span>
+  </div>
+
+  <div class="threshold-card-content">
+    <div class="threshold-group temperature">
+      <div class="threshold-group-title">Sıcaklık</div>
+
+      <div class="threshold-values">
+        <span>Min: {{ roomTemperatureMin }}°C</span>
+        <span>Optimum: {{ roomTemperatureOptimum }}°C</span>
+        <span>Max: {{ roomTemperatureMax }}°C</span>
+      </div>
+    </div>
+
+    <div class="threshold-group humidity">
+      <div class="threshold-group-title">Nem</div>
+
+      <div class="threshold-values">
+        <span>Min: {{ roomHumidityMin }}%</span>
+        <span>Optimum: {{ roomHumidityOptimum }}%</span>
+        <span>Max: {{ roomHumidityMax }}%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div
+  class="chart-section"
+  *ngIf="roomAverageTemperatureSeries.length > 0 || roomAverageHumiditySeries.length > 0"
+>
+  <h3>Oda Ortalama Sıcaklık / Nem Geçmişi</h3>
+
+  <div class="chart-legend">
+    <span *ngFor="let serie of roomAverageTemperatureSeries" class="legend-item">
+      <span class="legend-color" [style.background]="serie.color"></span>
+      {{ serie.sensorTitle }}
+    </span>
+
+    <span *ngFor="let serie of roomAverageHumiditySeries" class="legend-item">
+      <span class="legend-color" [style.background]="serie.color"></span>
+      {{ serie.sensorTitle }}
+    </span>
+  </div>
+
+  <div class="svg-chart-wrapper">
+    <svg
+      class="svg-chart"
+      [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+      preserveAspectRatio="none"
+    >
+      <!-- Y ekseni -->
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="chartPadding"
+        [attr.x2]="chartPadding"
+        [attr.y2]="chartHeight - chartPadding"
+        class="axis-line"
+      ></line>
+
+      <!-- X ekseni -->
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="chartHeight - chartPadding"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="chartHeight - chartPadding"
+        class="axis-line"
+      ></line>
+
+      <!-- Sol eksen değerleri -->
+      <text
+        *ngFor="let value of combinedRoomAverageAxisValues"
+        [attr.x]="8"
+        [attr.y]="getYPosition(value, 0, combinedRoomAverageMax) + 4"
+        class="axis-label"
+      >
+        {{ value }}
+      </text>
+
+      <!-- Oda ortalama sıcaklık çizgisi -->
+      <g *ngFor="let serie of roomAverageTemperatureSeries">
+        <polyline
+          class="chart-line average-chart-line"
+          [attr.points]="getPolylinePoints(serie.points)"
+          [attr.stroke]="serie.color"
+        ></polyline>
+
+        <circle
+          *ngFor="let point of serie.points"
+          class="chart-point"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+          r="4"
+          [attr.fill]="serie.color"
+          (mouseenter)="showChartTooltip($event, serie.sensorTitle, 'Ortalama Sıcaklık', point, '°C')"
+          (mousemove)="moveChartTooltip($event)"
+          (mouseleave)="hideChartTooltip()"
+        >
+          <title>
+            {{ serie.sensorTitle }} | Ortalama Sıcaklık: {{ point.value }} | {{ point.timeLabel }}
+          </title>
+        </circle>
+      </g>
+
+      <!-- Oda ortalama nem çizgisi -->
+      <g *ngFor="let serie of roomAverageHumiditySeries">
+        <polyline
+          class="chart-line average-chart-line"
+          [attr.points]="getPolylinePoints(serie.points)"
+          [attr.stroke]="serie.color"
+        ></polyline>
+
+        <circle
+          *ngFor="let point of serie.points"
+          class="chart-point"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+          r="4"
+          [attr.fill]="serie.color"
+          (mouseenter)="showChartTooltip($event, serie.sensorTitle, 'Ortalama Nem', point, '%')"
+          (mousemove)="moveChartTooltip($event)"
+          (mouseleave)="hideChartTooltip()"
+        >
+          <title>
+            {{ serie.sensorTitle }} | Ortalama Nem: {{ point.value }} | {{ point.timeLabel }}
+          </title>
+        </circle>
+      </g>
+    </svg>
+  </div>
+</div>
 
 
-  <div class="chart-section" *ngIf="roomAverageTemperatureSeries.length > 0">
+  <!-- <div class="chart-section" *ngIf="roomAverageTemperatureSeries.length > 0">
   <h3>Oda Ortalama Sıcaklık Geçmişi</h3>
 
   <div class="chart-legend">
@@ -311,7 +444,7 @@
       </g>
     </svg>
   </div>
-</div>
+</div> -->
 </div>
 
 
@@ -353,34 +486,148 @@
     <p>Ortalama Nem: {{ sensorAverageData.avg_nem }}</p>
   </div>
 
-  <!-- <div *ngIf="!loading && analysisType === 'sensor-last-n' && sensorLastNData.length > 0" class="result-panel">
-    <h2>Sensörün Son {{ limit }} Kaydı</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>Sıcaklık</th>
-          <th>Nem</th>
-          <th>Zaman</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let item of sensorLastNData">
-          <td>{{ item.sicaklik }}</td>
-          <td>{{ item.nem }}</td>
-          <td>{{ formatTimestamp(item.timestamp) }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div> -->
-
   <div
   *ngIf="!loading && analysisType === 'sensor-last-n' && sensorLastNData.length > 0"
   class="result-panel"
 >
   <h2>Sensörün Son {{ limit }} Kaydı</h2>
 
+  <div class="room-threshold-card" *ngIf="selectedRoom">
+  <div class="threshold-card-header">
+    <h3>Sensörün Bağlı Olduğu Oda Eşik Değerleri</h3>
+    <span>{{ selectedRoom.title }}</span>
+  </div>
 
-  <div class="chart-section" *ngIf="temperatureChartSeries.length > 0">
+  <div class="threshold-card-content">
+    <div class="threshold-group temperature">
+      <div class="threshold-group-title">Sıcaklık</div>
+
+      <div class="threshold-values">
+        <span>Min: {{ roomTemperatureMin }}°C</span>
+        <span>Optimum: {{ roomTemperatureOptimum }}°C</span>
+        <span>Max: {{ roomTemperatureMax }}°C</span>
+      </div>
+    </div>
+
+    <div class="threshold-group humidity">
+      <div class="threshold-group-title">Nem</div>
+
+      <div class="threshold-values">
+        <span>Min: {{ roomHumidityMin }}%</span>
+        <span>Optimum: {{ roomHumidityOptimum }}%</span>
+        <span>Max: {{ roomHumidityMax }}%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+  <div
+  class="chart-section"
+  *ngIf="temperatureChartSeries.length > 0 || humidityChartSeries.length > 0"
+>
+  <h3>Sıcaklık / Nem Geçmişi</h3>
+
+  <div class="chart-legend">
+    <span class="legend-item" *ngIf="temperatureChartSeries.length > 0">
+      <span class="legend-color" style="background: #0a3b9e;"></span>
+      Sıcaklık
+    </span>
+
+    <span class="legend-item" *ngIf="humidityChartSeries.length > 0">
+      <span class="legend-color" style="background: #0891b2;"></span>
+      Nem
+    </span>
+  </div>
+
+  <div class="svg-chart-wrapper">
+    <svg
+      class="svg-chart"
+      [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+      preserveAspectRatio="none"
+    >
+      <!-- Y ekseni -->
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="chartPadding"
+        [attr.x2]="chartPadding"
+        [attr.y2]="chartHeight - chartPadding"
+        class="axis-line"
+      ></line>
+
+      <!-- X ekseni -->
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="chartHeight - chartPadding"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="chartHeight - chartPadding"
+        class="axis-line"
+      ></line>
+
+      <!-- Sol eksen değerleri -->
+      <text
+        *ngFor="let value of combinedSensorAxisValues"
+        [attr.x]="8"
+        [attr.y]="getYPosition(value, 0, combinedSensorMax) + 4"
+        class="axis-label"
+      >
+        {{ value }}
+      </text>
+
+      <!-- Sıcaklık çizgisi -->
+      <g *ngFor="let serie of temperatureChartSeries">
+        <polyline
+          class="chart-line"
+          [attr.points]="getPolylinePoints(serie.points)"
+          stroke="#0a3b9e"
+        ></polyline>
+
+        <circle
+          *ngFor="let point of serie.points"
+          class="chart-point"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+          r="4"
+          fill="#0a3b9e"
+          (mouseenter)="showChartTooltip($event, serie.sensorTitle, 'Sıcaklık', point, '°C')"
+          (mousemove)="moveChartTooltip($event)"
+          (mouseleave)="hideChartTooltip()"
+        >
+          <title>
+            {{ serie.sensorTitle }} | Sıcaklık: {{ point.value }} | {{ point.timeLabel }}
+          </title>
+        </circle>
+      </g>
+
+      <!-- Nem çizgisi -->
+      <g *ngFor="let serie of humidityChartSeries">
+        <polyline
+          class="chart-line"
+          [attr.points]="getPolylinePoints(serie.points)"
+          stroke="#0891b2"
+        ></polyline>
+
+        <circle
+          *ngFor="let point of serie.points"
+          class="chart-point"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+          r="4"
+          fill="#0891b2"
+          (mouseenter)="showChartTooltip($event, serie.sensorTitle, 'Nem', point, '%')"
+          (mousemove)="moveChartTooltip($event)"
+          (mouseleave)="hideChartTooltip()"
+        >
+          <title>
+            {{ serie.sensorTitle }} | Nem: {{ point.value }} | {{ point.timeLabel }}
+          </title>
+        </circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+  <!-- <div class="chart-section" *ngIf="temperatureChartSeries.length > 0">
   <h3>Sıcaklık Geçmişi</h3>
 
   <div class="chart-legend">
@@ -396,7 +643,6 @@
       [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
       preserveAspectRatio="none"
     >
-      <!-- Eksenler -->
       <line
         [attr.x1]="chartPadding"
         [attr.y1]="chartPadding"
@@ -413,7 +659,6 @@
         class="axis-line"
       ></line>
 
-      <!-- Eşik çizgileri -->
       <line
         [attr.x1]="chartPadding"
         [attr.y1]="temperatureMaxThresholdY"
@@ -447,7 +692,6 @@
         {{ value }}
       </text>
 
-      <!-- Seri -->
       <g *ngFor="let serie of temperatureChartSeries">
         <polyline
           class="chart-line"
@@ -492,7 +736,6 @@
       [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
       preserveAspectRatio="none"
     >
-      <!-- Eksenler -->
       <line
         [attr.x1]="chartPadding"
         [attr.y1]="chartPadding"
@@ -509,7 +752,6 @@
         class="axis-line"
       ></line>
 
-      <!-- Eşik çizgileri -->
       <line
         [attr.x1]="chartPadding"
         [attr.y1]="humidityMaxThresholdY"
@@ -534,7 +776,6 @@
         class="grid-line threshold-min-line"
       ></line>
 
-      <!-- Sol eksen değerleri -->
       <text
         *ngFor="let value of humidityAxisValues"
         [attr.x]="8"
@@ -544,7 +785,6 @@
         {{ value }}
       </text>
 
-      <!-- Seri -->
       <g *ngFor="let serie of humidityChartSeries">
         <polyline
           class="chart-line"
@@ -570,7 +810,7 @@
       </g>
     </svg>
   </div>
-</div>
+</div> -->
   </div>
 
   <div *ngIf="!loading && analysisType === 'sensor-range' && sensorRangeData.length > 0" class="result-panel">

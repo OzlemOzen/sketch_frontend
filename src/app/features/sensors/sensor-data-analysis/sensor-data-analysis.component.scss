@@ -386,3 +386,68 @@ th {
   font-weight: 700;
   color: #cbd5e1;
 }
+
+
+.room-threshold-card {
+  margin-top: 14px;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  border: 1px solid #dbe3ef;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.threshold-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.threshold-card-header h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #1f2937;
+}
+
+.threshold-card-header span {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.threshold-card-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.threshold-group {
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+}
+
+.threshold-group-title {
+  font-size: 14px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #111827;
+}
+
+.threshold-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.threshold-values span {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #1e3a8a;
+  font-size: 13px;
+  font-weight: 700;
+}

@@ -276,40 +276,103 @@ onRoomChange(roomId: number | null): void {
   return null;
 }
 
-  runAnalysis(): void {
+
+runAnalysis(): void {
   this.loading = true;
   this.errorMessage = '';
   this.clearResults();
 
-  const validationMessage = this.validateAnalysisSelection();
-
-  if (validationMessage) {
-    this.errorMessage = validationMessage;
+  if (this.selectedBuildingId == null) {
+    this.errorMessage = 'Önce bina seçiniz.';
     this.loading = false;
     return;
   }
 
+  this.roomApiService.getRoomsByBuildingId(this.selectedBuildingId).subscribe({
+    next: (rooms: Room[]) => {
+      this.rooms = rooms;
+      this.sensors = rooms.flatMap((room) => room.sensors ?? []);
+
+      const validationMessage = this.validateAnalysisSelection();
+
+      if (validationMessage) {
+        this.errorMessage = validationMessage;
+        this.loading = false;
+        return;
+      }
+
+      this.runSelectedAnalysis();
+    },
+    error: () => {
+      this.errorMessage = 'Odalar güncellenemedi.';
+      this.loading = false;
+    }
+  });
+}
+
+private runSelectedAnalysis(): void {
   switch (this.analysisType) {
     case 'room-latest':
       this.runRoomLatest();
       break;
+
     case 'room-history':
       this.runRoomHistory();
       break;
+
     case 'sensor-latest':
       this.runSensorLatest();
       break;
+
     case 'sensor-average':
       this.runSensorAverage();
       break;
+
     case 'sensor-last-n':
       this.runSensorLastN();
       break;
+
     case 'sensor-range':
       this.runSensorRange();
       break;
   }
 }
+
+
+//   runAnalysis(): void {
+//   this.loading = true;
+//   this.errorMessage = '';
+//   this.clearResults();
+
+//   const validationMessage = this.validateAnalysisSelection();
+
+//   if (validationMessage) {
+//     this.errorMessage = validationMessage;
+//     this.loading = false;
+//     return;
+//   }
+
+//   switch (this.analysisType) {
+//     case 'room-latest':
+//       this.runRoomLatest();
+//       break;
+//     case 'room-history':
+//       this.runRoomHistory();
+//       break;
+//     case 'sensor-latest':
+//       this.runSensorLatest();
+//       break;
+//     case 'sensor-average':
+//       this.runSensorAverage();
+//       break;
+//     case 'sensor-last-n':
+//       this.runSensorLastN();
+//       break;
+//     case 'sensor-range':
+//       this.runSensorRange();
+//       break;
+//   }
+// }
 
   private runRoomLatest(): void {
     if (this.selectedRoomId == null) {
@@ -631,6 +694,37 @@ get humidityAxisValues(): number[] {
       this.roomHumidityMax
     ]
   );
+}
+
+get combinedRoomAverageMax(): number {
+  return Math.max(this.temperatureMax, this.humidityMax);
+}
+
+get combinedRoomAverageAxisValues(): number[] {
+  return this.buildTenStepTicks(this.combinedRoomAverageMax);
+}
+
+get combinedSensorMax(): number {
+  return Math.max(this.temperatureMax, this.humidityMax);
+}
+
+get combinedSensorAxisValues(): number[] {
+  return this.buildTenStepTicks(this.combinedSensorMax);
+}
+
+
+get selectedSensorRoom() {
+  if (this.selectedSensorId == null) {
+    return this.selectedRoom;
+  }
+
+  const sensor = this.sensors.find(item => item.id === this.selectedSensorId);
+
+  if (!sensor) {
+    return this.selectedRoom;
+  }
+
+  return this.rooms.find(room => room.id === sensor.room_id) ?? this.selectedRoom;
 }
 
 
