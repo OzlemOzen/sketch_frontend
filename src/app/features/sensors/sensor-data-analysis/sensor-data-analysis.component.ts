@@ -69,7 +69,7 @@ export class SensorDataAnalysisComponent implements OnInit {
   
   chartLabels: string[] = [];
   chartWidth = 1000;
-  chartHeight = 320;
+  chartHeight = 300;
   chartPadding = 48;
   
   temperatureMin = 0;
@@ -334,28 +334,6 @@ onRoomChange(roomId: number | null): void {
     });
   }
 
-//   private runRoomHistory(): void {
-//     if (this.selectedRoomId == null) {
-//       this.finishWithError('Lütfen bir oda seçin.');
-//       return;
-//     }
-
-//     this.sensorDataApiService.getByRoomId(this.selectedRoomId, this.limit).subscribe({
-//       next: (data) => {
-//   const activeSensorIds = this.getActiveSensorIdsForSelectedRoom();
-//   const filteredData = data.filter(item => activeSensorIds.has(item.sensor_id));
-
-//   console.log('roomHistory raw:', data);
-//   console.log('visibleSensors:', this.visibleSensors);
-//   console.log('roomHistory filtered:', filteredData);
-
-//   this.roomHistoryData = filteredData;
-//   this.loading = false;
-// },
-//       error: () => this.finishWithError('Odaya ait geçmiş veriler alınamadı.')
-//     });
-//   }
-
 get temperatureMiddleValue(): number {
   return Number(((this.temperatureMin + this.temperatureMax) / 2).toFixed(1));
 }
@@ -520,6 +498,161 @@ private getChartColor(index: number): string {
   return colors[index % colors.length];
 }
 
+
+private getPaddedRange(values: number[], thresholdValues: number[]): { min: number; max: number } {
+  const allValues = [...values, ...thresholdValues].filter(
+    (value): value is number => value != null && !Number.isNaN(value)
+  );
+
+  if (!allValues.length) {
+    return { min: 0, max: 100 };
+  }
+
+  const rawMin = Math.min(...allValues);
+  const rawMax = Math.max(...allValues);
+  const range = Math.max(rawMax - rawMin, 1);
+  const padding = range * 0.1;
+
+  return {
+    min: Number((rawMin - padding).toFixed(1)),
+    max: Number((rawMax + padding).toFixed(1))
+  };
+}
+
+get temperatureMinThresholdY(): number {
+  return this.getYPosition(
+    this.roomTemperatureMin,
+    this.temperatureMin,
+    this.temperatureMax
+  );
+}
+
+get temperatureMaxThresholdY(): number {
+  return this.getYPosition(
+    this.roomTemperatureMax,
+    this.temperatureMin,
+    this.temperatureMax
+  );
+}
+
+get humidityMinThresholdY(): number {
+  return this.getYPosition(
+    this.roomHumidityMin,
+    this.humidityMin,
+    this.humidityMax
+  );
+}
+
+get humidityMaxThresholdY(): number {
+  return this.getYPosition(
+    this.roomHumidityMax,
+    this.humidityMin,
+    this.humidityMax
+  );
+}
+
+
+private roundUpToNearestTen(value: number): number {
+  return Math.ceil(value / 10) * 10;
+}
+
+private buildTenStepTicks(maxValue: number): number[] {
+  const roundedMax = this.roundUpToNearestTen(maxValue);
+  const ticks: number[] = [];
+
+  for (let value = roundedMax; value >= 0; value -= 10) {
+    ticks.push(value);
+  }
+
+  return ticks;
+}
+
+get temperatureAxisTicks(): number[] {
+  return this.buildTenStepTicks(this.temperatureMax);
+}
+
+get humidityAxisTicks(): number[] {
+  return this.buildTenStepTicks(this.humidityMax);
+}
+
+private buildAxisValuesWithThresholds(
+  minValue: number,
+  maxValue: number,
+  thresholds: number[]
+): number[] {
+  const roundedMax = this.roundUpToNearestTen(maxValue);
+
+  const cleanThresholds = thresholds
+    .map(value => Number(value))
+    .filter(value => !Number.isNaN(value) && value >= minValue && value <= roundedMax);
+
+  const regularTicks: number[] = [];
+  for (let value = 0; value <= roundedMax; value += 10) {
+    regularTicks.push(value);
+  }
+
+  const filteredRegularTicks = regularTicks.filter(tick => {
+    return !cleanThresholds.some(threshold => {
+      const diff = Math.abs(tick - threshold);
+      if (diff === 0) {
+        return true;
+      }
+
+      return diff < 2;
+    });
+  });
+
+  const merged = [...filteredRegularTicks, ...cleanThresholds];
+
+  const uniqueValues = [...new Set(merged.map(value => Number(value.toFixed(1))))];
+
+  return uniqueValues.sort((a, b) => b - a);
+}
+
+get temperatureAxisValues(): number[] {
+  return this.buildAxisValuesWithThresholds(
+    this.temperatureMin,
+    this.temperatureMax,
+    [
+      this.roomTemperatureMin,
+      this.roomTemperatureOptimum,
+      this.roomTemperatureMax
+    ]
+  );
+}
+
+get humidityAxisValues(): number[] {
+  return this.buildAxisValuesWithThresholds(
+    this.humidityMin,
+    this.humidityMax,
+    [
+      this.roomHumidityMin,
+      this.roomHumidityOptimum,
+      this.roomHumidityMax
+    ]
+  );
+}
+
+
+private isCloseTo(value1: number, value2: number, epsilon = 0.1): boolean {
+  return Math.abs(value1 - value2) < epsilon;
+}
+
+isTemperatureThresholdValue(value: number): boolean {
+  return this.isCloseTo(value, this.roomTemperatureMin) ||
+         this.isCloseTo(value, this.roomTemperatureOptimum) ||
+         this.isCloseTo(value, this.roomTemperatureMax);
+}
+
+isHumidityThresholdValue(value: number): boolean {
+  return this.isCloseTo(value, this.roomHumidityMin) ||
+         this.isCloseTo(value, this.roomHumidityOptimum) ||
+         this.isCloseTo(value, this.roomHumidityMax);
+}
+
+private readonly manualTemperatureMax = 50;
+private readonly manualHumidityMax = 50;
+
 private buildRoomHistoryCharts(data: SensorDataItem[]): void {
   if (!data.length) {
     this.temperatureChartSeries = [];
@@ -550,43 +683,53 @@ private buildRoomHistoryCharts(data: SensorDataItem[]): void {
     .map(item => Number(item.nem))
     .filter(value => !Number.isNaN(value));
 
-    /*
-  this.temperatureMin = this.getNiceMin(temperatureValues);
-  this.temperatureMax = this.getNiceMax(temperatureValues);
-
-  this.humidityMin = this.getNiceMin(humidityValues);
-  this.humidityMax = this.getNiceMax(humidityValues);
-  */
-
   const selectedRoom = this.selectedRoom;
 
-const dataTemperatureMin = this.getNiceMin(temperatureValues);
-const dataTemperatureMax = this.getNiceMax(temperatureValues);
+  const dataTemperatureMin = this.getNiceMin(temperatureValues);
+  const dataTemperatureMax = this.getNiceMax(temperatureValues);
 
-const dataHumidityMin = this.getNiceMin(humidityValues);
-const dataHumidityMax = this.getNiceMax(humidityValues);
+  const dataHumidityMin = this.getNiceMin(humidityValues);
+  const dataHumidityMax = this.getNiceMax(humidityValues);
 
-const roomTemperatureMin = selectedRoom?.temperature_min_value != null
-  ? Number(selectedRoom.temperature_min_value)
-  : dataTemperatureMin;
+  const roomTemperatureMin = selectedRoom?.temperature_min_value != null
+    ? Number(selectedRoom.temperature_min_value)
+    : dataTemperatureMin;
 
-const roomTemperatureMax = selectedRoom?.temperature_max_value != null
-  ? Number(selectedRoom.temperature_max_value)
-  : dataTemperatureMax;
+  const roomTemperatureOptimum = selectedRoom?.temperature_optimum_value != null
+    ? Number(selectedRoom.temperature_optimum_value)
+    : Number(((roomTemperatureMin + dataTemperatureMax) / 2).toFixed(1));
 
-const roomHumidityMin = selectedRoom?.humidity_min_value != null
-  ? Number(selectedRoom.humidity_min_value)
-  : dataHumidityMin;
+  const roomTemperatureMax = selectedRoom?.temperature_max_value != null
+    ? Number(selectedRoom.temperature_max_value)
+    : dataTemperatureMax;
 
-const roomHumidityMax = selectedRoom?.humidity_max_value != null
-  ? Number(selectedRoom.humidity_max_value)
-  : dataHumidityMax;
+  const roomHumidityMin = selectedRoom?.humidity_min_value != null
+    ? Number(selectedRoom.humidity_min_value)
+    : dataHumidityMin;
 
-this.temperatureMin = Math.min(roomTemperatureMin, dataTemperatureMin);
-this.temperatureMax = Math.max(roomTemperatureMax, dataTemperatureMax);
+  const roomHumidityOptimum = selectedRoom?.humidity_optimum_value != null
+    ? Number(selectedRoom.humidity_optimum_value)
+    : Number(((roomHumidityMin + dataHumidityMax) / 2).toFixed(1));
 
-this.humidityMin = Math.min(roomHumidityMin, dataHumidityMin);
-this.humidityMax = Math.max(roomHumidityMax, dataHumidityMax);
+  const roomHumidityMax = selectedRoom?.humidity_max_value != null
+    ? Number(selectedRoom.humidity_max_value)
+    : dataHumidityMax;
+
+  const temperatureRange = this.getPaddedRange(
+    temperatureValues,
+    [roomTemperatureMin, roomTemperatureOptimum, roomTemperatureMax]
+  );
+
+  const humidityRange = this.getPaddedRange(
+    humidityValues,
+    [roomHumidityMin, roomHumidityOptimum, roomHumidityMax]
+  );
+
+  this.temperatureMin = 0;
+  this.temperatureMax = this.manualTemperatureMax;
+
+  this.humidityMin = 0;
+  this.humidityMax = this.manualHumidityMax;
 
   const sensorIds = [...new Set(sortedData.map(item => item.sensor_id))];
 
@@ -597,7 +740,13 @@ this.humidityMax = Math.max(roomHumidityMax, dataHumidityMax);
       sensorId,
       sensorTitle: this.getSensorTitle(sensorId),
       color: this.getChartColor(index),
-      points: this.createChartPoints(sensorItems, timestamps, 'sicaklik', this.temperatureMin, this.temperatureMax)
+      points: this.createChartPoints(
+        sensorItems,
+        timestamps,
+        'sicaklik',
+        this.temperatureMin,
+        this.temperatureMax
+      )
     };
   });
 
@@ -608,10 +757,17 @@ this.humidityMax = Math.max(roomHumidityMax, dataHumidityMax);
       sensorId,
       sensorTitle: this.getSensorTitle(sensorId),
       color: this.getChartColor(index),
-      points: this.createChartPoints(sensorItems, timestamps, 'nem', this.humidityMin, this.humidityMax)
+      points: this.createChartPoints(
+        sensorItems,
+        timestamps,
+        'nem',
+        this.humidityMin,
+        this.humidityMax
+      )
     };
   });
 }
+
 
 private buildRoomAverageCharts(data: SensorDataItem[]): void {
   if (!data.length) {
@@ -734,28 +890,6 @@ private createAverageChartPoints(
   });
 }
 
-// private runRoomHistory(): void {
-//   if (this.selectedRoomId == null) {
-//     this.finishWithError('Lütfen bir oda seçin.');
-//     return;
-//   }
-
-//   this.sensorDataApiService.getByRoomId(this.selectedRoomId, this.limit).subscribe({
-//     next: (data) => {
-//       const activeSensorIds = this.getActiveSensorIdsForSelectedRoom();
-//       const filteredData = data.filter(item => activeSensorIds.has(item.sensor_id));
-
-//       console.log('roomHistory raw:', data);
-//       console.log('visibleSensors:', this.visibleSensors);
-//       console.log('roomHistory filtered:', filteredData);
-
-//       this.roomHistoryData = filteredData;
-//       this.buildRoomHistoryCharts(filteredData);
-//       this.loading = false;
-//     },
-//     error: () => this.finishWithError('Odaya ait geçmiş veriler alınamadı.')
-//   });
-// }
 
 private runRoomHistory(): void {
   if (this.selectedRoomId == null) {
@@ -812,20 +946,29 @@ private runRoomHistory(): void {
     });
   }
 
-  private runSensorLastN(): void {
-    if (this.selectedSensorId == null) {
-      this.finishWithError('Lütfen bir sensör seçin.');
-      return;
-    }
 
-    this.sensorDataApiService.getLastNBySensorId(this.selectedSensorId, this.limit).subscribe({
-      next: (data) => {
-        this.sensorLastNData = data;
-        this.loading = false;
-      },
-      error: () => this.finishWithError('Sensörün son kayıtları alınamadı.')
-    });
+private runSensorLastN(): void {
+  if (this.selectedSensorId == null) {
+    this.finishWithError('Lütfen bir sensör seçin.');
+    return;
   }
+
+  this.sensorDataApiService.getLastNBySensorId(this.selectedSensorId, this.limit).subscribe({
+    next: (data) => {
+      const sortedData = [...data].sort((a, b) => {
+        const firstTime = a.timestamp ?? 0;
+        const secondTime = b.timestamp ?? 0;
+        return firstTime - secondTime;
+      });
+
+      this.sensorLastNData = sortedData;
+      this.buildRoomHistoryCharts(sortedData);
+
+      this.loading = false;
+    },
+    error: () => this.finishWithError('Sensörün son kayıtları alınamadı.')
+  });
+}
 
   private runSensorRange(): void {
     if (this.selectedSensorId == null) {

@@ -187,12 +187,6 @@
         [style.width.px]="(room.width ?? 0)"
         [style.height.px]="(room.height ?? 0)"
       >
-        <!-- <span
-        class="room-title"
-        [style.left.px]="room.titleLeft ?? 8"
-        [style.top.px]="room.titleTop ?? 8">
-        {{ room.title }}
-      </span> -->
       <div
   class="room-info"
   [style.left.px]="room.titleLeft ?? 8"
@@ -216,22 +210,6 @@
   </div>
 </div>
 
-        <!-- <div
-          *ngFor="let restrictedRoom of room.restrictedAreas; trackBy: trackByRestrictedRoom"
-          class="restrictedRoom"
-          [ngClass]="{
-            'restrictedRoom-normal': restrictedRoom.statusColor === 'normal',
-            'restrictedRoom-warning': restrictedRoom.statusColor === 'warning',
-            'restrictedRoom-critical': restrictedRoom.statusColor === 'critical',
-            'restrictedRoom-unknown': restrictedRoom.statusColor === 'unknown'
-          }"
-          [style.left.px]="restrictedRoom.x - (room.x ?? 0)"
-          [style.top.px]="(room.y ?? 0) - restrictedRoom.y"
-          [style.width.px]="restrictedRoom.width"
-          [style.height.px]="restrictedRoom.height"
-        >
-          <span class="restricted-room-title">{{ restrictedRoom.title }}</span>
-        </div> -->
         <div
   *ngFor="let restrictedRoom of room.restrictedAreas; trackBy: trackByRestrictedRoom"
   class="restrictedRoom"
@@ -273,21 +251,24 @@
   [style.top.px]="-sensor.y"
 >
   <div class="sensor-info">
-    <div class="sensor-name">
-      {{ sensor.title }}
-    </div>
-
-    <div class="sensor-live-values">
-      <ng-container *ngIf="sensor.sicaklik != null || sensor.nem != null; else noSensorLiveData">
-        <div>{{ sensor.sicaklik != null ? (sensor.sicaklik | number:'1.1-1') : '-' }}°C</div>
-        <div>{{ sensor.nem != null ? (sensor.nem | number:'1.1-1') : '-' }}%</div>
-      </ng-container>
-
-      <ng-template #noSensorLiveData>
-        <div>Veri yok</div>
-      </ng-template>
-    </div>
+    <div class="sensor-room-info">
+    {{ getSensorRoomInfo(sensor) }}
   </div>
+  <div class="sensor-name">
+    {{ sensor.title }}
+  </div>
+
+  <div class="sensor-live-values">
+    <ng-container *ngIf="sensor.sicaklik != null || sensor.nem != null; else noSensorLiveData">
+      <div>{{ sensor.sicaklik != null ? (sensor.sicaklik | number:'1.1-1') : '-' }}°C</div>
+      <div>{{ sensor.nem != null ? (sensor.nem | number:'1.1-1') : '-' }}%</div>
+    </ng-container>
+
+    <ng-template #noSensorLiveData>
+      <div>Veri yok</div>
+    </ng-template>
+  </div>
+</div>
 
   <span
     class="material-symbols-outlined sensor-icon"

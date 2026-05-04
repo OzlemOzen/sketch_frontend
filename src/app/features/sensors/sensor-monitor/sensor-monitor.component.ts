@@ -497,7 +497,6 @@ export class SensorMonitorComponent implements OnInit, OnDestroy {
      floors: [...group.floors].sort((a, b) => Number(a.floorNumber) - Number(b.floorNumber))
    }));
 
-  //  this.notifyIfCountsIncreased();
 
   this.notifyNewProblemRooms();
 }

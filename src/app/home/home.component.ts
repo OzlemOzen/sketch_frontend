@@ -366,6 +366,11 @@ private getRoomBySensor(sensor: SensorViewModel): RoomViewModel | undefined {
   return this.rooms.find(room => room.id === sensor.room_id);
 }
 
+getSensorRoomInfo(sensor: SensorViewModel): string {
+  const room = this.getRoomBySensor(sensor);
+  return room?.title ?? 'Oda bulunamadı';
+}
+
 
 private evaluateMetricStatus(
   currentValue: number | null | undefined,
@@ -607,55 +612,6 @@ get isAnyFormOpen(): boolean {
     this.sensorDeleteModalOpen
   );
 }
-
-/*
-handleSensorStreamMessage(message: any): void {
-  if (!message || typeof message.sensor_id !== 'number') {
-    return;
-  }
-
-  console.log('WS sensor_id:', message.sensor_id);
-console.log('this.sensors ids:', this.sensors.map(s => s.id));
-  const index = this.sensors.findIndex(
-    sensor => sensor.id === message.sensor_id
-  );
-
-  if (index === -1) {
-    console.warn('Sensör bulunamadı:', message.sensor_id);
-    return;
-  }
-
-  const updatedSensor: SensorViewModel = {
-    ...this.sensors[index],
-    sicaklik: typeof message.sicaklik === 'number'
-      ? message.sicaklik
-      : this.sensors[index].sicaklik,
-    nem: typeof message.nem === 'number'
-      ? message.nem
-      : this.sensors[index].nem,
-    lastUpdated: typeof message.timestamp === 'number'
-      ? message.timestamp
-      : this.sensors[index].lastUpdated
-  };
-
-  updatedSensor.current_value =
-    typeof updatedSensor.sicaklik === 'number'
-      ? updatedSensor.sicaklik
-      : null;
-
-  updatedSensor.statusColor = 'unknown';
-
-
-  this.sensors[index] = updatedSensor;
-  this.sensors = [...this.sensors];
-
-  if (this.isAnyFormOpen) {
-    return;
-  }
-  this.refreshRoomStatuses();
-  this.refreshFaultySensors();
-}
-*/
 
 
 get problematicRooms(): RoomViewModel[] {
@@ -2995,7 +2951,6 @@ onSensorSave(formValue: SensorFormValue): void {
     next: () => {
       this.sensorModalOpen = false;
       this.sensorFormData = this.createEmptySensorForm();
-      // this.loadSensorsForCurrentRooms();
       if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
         this.loadRooms(this.currentBuildingId, this.selectedFloorNumber);
       }
@@ -3082,7 +3037,6 @@ const payload = {
     next: () => {
       this.sensorUpdateModalOpen = false;
       this.selectedSensorIdForUpdate = null;
-      // this.loadSensorsForCurrentRooms();
       if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
         this.loadRooms(this.currentBuildingId, this.selectedFloorNumber);
       }
@@ -3103,7 +3057,6 @@ onSensorDelete(): void {
     next: () => {
       this.sensorDeleteModalOpen = false;
       this.selectedSensorIdForDelete = null;
-      // this.loadSensorsForCurrentRooms();
       if (this.currentBuildingId !== null && this.selectedFloorNumber !== null) {
         this.loadRooms(this.currentBuildingId, this.selectedFloorNumber);
       }
@@ -3332,7 +3285,6 @@ private refreshRoomStatuses(): void {
 
   this.rebuildRoomHierarchy();
   this.rebuildRoomHierarchy();
-  // this.notifyIfRoomStatusIncreased();
   this.notifyNewProblemRooms();
 }
 

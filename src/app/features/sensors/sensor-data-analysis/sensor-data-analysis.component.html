@@ -160,24 +160,37 @@
       ></line>
 
       <line
-        [attr.x1]="chartPadding"
-        [attr.y1]="temperatureOptimumY"
-        [attr.x2]="chartWidth - chartPadding"
-        [attr.y2]="temperatureOptimumY"
-        class="grid-line optimum-line"
-      ></line>
+  [attr.x1]="chartPadding"
+  [attr.y1]="temperatureMaxThresholdY"
+  [attr.x2]="chartWidth - chartPadding"
+  [attr.y2]="temperatureMaxThresholdY"
+  class="grid-line threshold-max-line"
+></line>
 
-      <text [attr.x]="8" [attr.y]="chartPadding + 4" class="axis-label">
-        {{ roomTemperatureMax }}
-      </text>
+<line
+  [attr.x1]="chartPadding"
+  [attr.y1]="temperatureOptimumY"
+  [attr.x2]="chartWidth - chartPadding"
+  [attr.y2]="temperatureOptimumY"
+  class="grid-line optimum-line"
+></line>
 
-      <text [attr.x]="8" [attr.y]="temperatureOptimumY + 4" class="axis-label">
-        {{ roomTemperatureOptimum }}
-      </text>
+<line
+  [attr.x1]="chartPadding"
+  [attr.y1]="temperatureMinThresholdY"
+  [attr.x2]="chartWidth - chartPadding"
+  [attr.y2]="temperatureMinThresholdY"
+  class="grid-line threshold-min-line"
+></line>
 
-      <text [attr.x]="8" [attr.y]="chartHeight - chartPadding + 4" class="axis-label">
-        {{ roomTemperatureMin }}
-      </text>
+<text
+  *ngFor="let value of temperatureAxisValues"
+  [attr.x]="8"
+  [attr.y]="getYPosition(value, temperatureMin, temperatureMax) + 4"
+  [ngClass]="isTemperatureThresholdValue(value) ? 'axis-label threshold-axis-label' : 'axis-label'"
+>
+  {{ value }}
+</text>
 
       <g *ngFor="let serie of roomAverageTemperatureSeries">
         <polyline
@@ -185,19 +198,6 @@
           [attr.points]="getPolylinePoints(serie.points)"
           [attr.stroke]="serie.color"
         ></polyline>
-
-        <!-- <circle
-          *ngFor="let point of serie.points"
-          class="chart-point"
-          [attr.cx]="point.x"
-          [attr.cy]="point.y"
-          r="4"
-          [attr.fill]="serie.color"
-        >
-          <title>
-            {{ serie.sensorTitle }} | Ortalama Sıcaklık: {{ point.value }} | {{ point.timeLabel }}
-          </title>
-        </circle> -->
         <circle
   *ngFor="let point of serie.points"
   class="chart-point"
@@ -252,24 +252,39 @@
       ></line>
 
       <line
-        [attr.x1]="chartPadding"
-        [attr.y1]="humidityOptimumY"
-        [attr.x2]="chartWidth - chartPadding"
-        [attr.y2]="humidityOptimumY"
-        class="grid-line optimum-line"
-      ></line>
+  [attr.x1]="chartPadding"
+  [attr.y1]="humidityMaxThresholdY"
+  [attr.x2]="chartWidth - chartPadding"
+  [attr.y2]="humidityMaxThresholdY"
+  class="grid-line threshold-max-line"
+></line>
 
-      <text [attr.x]="8" [attr.y]="chartPadding + 4" class="axis-label">
-        {{ roomHumidityMax }}
-      </text>
+<line
+  [attr.x1]="chartPadding"
+  [attr.y1]="humidityOptimumY"
+  [attr.x2]="chartWidth - chartPadding"
+  [attr.y2]="humidityOptimumY"
+  class="grid-line optimum-line"
+></line>
 
-      <text [attr.x]="8" [attr.y]="humidityOptimumY + 4" class="axis-label">
-        {{ roomHumidityOptimum }}
-      </text>
+<line
+  [attr.x1]="chartPadding"
+  [attr.y1]="humidityMinThresholdY"
+  [attr.x2]="chartWidth - chartPadding"
+  [attr.y2]="humidityMinThresholdY"
+  class="grid-line threshold-min-line"
+></line>
 
-      <text [attr.x]="8" [attr.y]="chartHeight - chartPadding + 4" class="axis-label">
-        {{ roomHumidityMin }}
-      </text>
+
+
+<text
+  *ngFor="let value of humidityAxisValues"
+  [attr.x]="8"
+  [attr.y]="getYPosition(value, humidityMin, humidityMax) + 4"
+  [ngClass]="isHumidityThresholdValue(value) ? 'axis-label threshold-axis-label' : 'axis-label'"
+>
+  {{ value }}
+</text>
 
       <g *ngFor="let serie of roomAverageHumiditySeries">
         <polyline
@@ -278,18 +293,6 @@
           [attr.stroke]="serie.color"
         ></polyline>
 
-        <!-- <circle
-          *ngFor="let point of serie.points"
-          class="chart-point"
-          [attr.cx]="point.x"
-          [attr.cy]="point.y"
-          r="4"
-          [attr.fill]="serie.color"
-        >
-          <title>
-            {{ serie.sensorTitle }} | Ortalama Nem: {{ point.value }} | {{ point.timeLabel }}
-          </title>
-        </circle> -->
         <circle
   *ngFor="let point of serie.points"
   class="chart-point"
@@ -309,205 +312,8 @@
     </svg>
   </div>
 </div>
-
-
-
-
-
-  <div class="chart-section">
-    <h3>Sıcaklık Geçmişi</h3>
-
-    <div class="chart-legend">
-      <span *ngFor="let serie of temperatureChartSeries" class="legend-item">
-        <span class="legend-color" [style.background]="serie.color"></span>
-        {{ serie.sensorTitle }}
-      </span>
-    </div>
-
-    <div class="svg-chart-wrapper">
-      <svg
-        class="svg-chart"
-        [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
-        preserveAspectRatio="none"
-      >
-        <line
-          [attr.x1]="chartPadding"
-          [attr.y1]="chartPadding"
-          [attr.x2]="chartPadding"
-          [attr.y2]="chartHeight - chartPadding"
-          class="axis-line"
-        ></line>
-
-        <line
-          [attr.x1]="chartPadding"
-          [attr.y1]="chartHeight - chartPadding"
-          [attr.x2]="chartWidth - chartPadding"
-          [attr.y2]="chartHeight - chartPadding"
-          class="axis-line"
-        ></line>
-
-        <line
-          [attr.x1]="chartPadding"
-          [attr.y1]="temperatureOptimumY"
-          [attr.x2]="chartWidth - chartPadding"
-          [attr.y2]="temperatureOptimumY"
-          class="grid-line optimum-line"
-        ></line>
-
-        <text [attr.x]="8" [attr.y]="chartPadding + 4" class="axis-label">
-          <!-- {{ temperatureMax }} -->
-            {{ roomTemperatureMax }}
-        </text>
-
-        <!-- <text [attr.x]="8" [attr.y]="chartHeight / 2 + 4" class="axis-label">
-           {{ temperatureMiddleValue }} 
-            {{ roomTemperatureOptimum }}
-        </text> -->
-        <text [attr.x]="8" [attr.y]="temperatureOptimumY + 4" class="axis-label">
-          {{ roomTemperatureOptimum }}
-        </text>
-
-        <text [attr.x]="8" [attr.y]="chartHeight - chartPadding + 4" class="axis-label">
-          <!-- {{ temperatureMin }} -->
-            {{ roomTemperatureMin }}
-        </text>
-
-        <g *ngFor="let serie of temperatureChartSeries">
-          <polyline
-            class="chart-line"
-            [attr.points]="getPolylinePoints(serie.points)"
-            [attr.stroke]="serie.color"
-          ></polyline>
-
-          <!-- <circle
-            *ngFor="let point of serie.points"
-            class="chart-point"
-            [attr.cx]="point.x"
-            [attr.cy]="point.y"
-            r="4"
-            [attr.fill]="serie.color"
-          >
-            <title>
-              {{ serie.sensorTitle }} | Sıcaklık: {{ point.value }} | {{ point.timeLabel }}
-            </title>
-          </circle> -->
-          <circle
-  *ngFor="let point of serie.points"
-  class="chart-point"
-  [attr.cx]="point.x"
-  [attr.cy]="point.y"
-  r="4"
-  [attr.fill]="serie.color"
-  (mouseenter)="showChartTooltip($event, serie.sensorTitle, 'Sıcaklık', point, '°C')"
-  (mousemove)="moveChartTooltip($event)"
-  (mouseleave)="hideChartTooltip()"
->
-  <title>
-    {{ serie.sensorTitle }} | Sıcaklık: {{ point.value }} | {{ point.timeLabel }}
-  </title>
-</circle>
-        </g>
-      </svg>
-    </div>
-  </div>
-
-  <div class="chart-section">
-    <h3>Nem Geçmişi</h3>
-
-    <div class="chart-legend">
-      <span *ngFor="let serie of humidityChartSeries" class="legend-item">
-        <span class="legend-color" [style.background]="serie.color"></span>
-        {{ serie.sensorTitle }}
-      </span>
-    </div>
-
-    <div class="svg-chart-wrapper">
-      <svg
-        class="svg-chart"
-        [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
-        preserveAspectRatio="none"
-      >
-        <line
-          [attr.x1]="chartPadding"
-          [attr.y1]="chartPadding"
-          [attr.x2]="chartPadding"
-          [attr.y2]="chartHeight - chartPadding"
-          class="axis-line"
-        ></line>
-
-        <line
-          [attr.x1]="chartPadding"
-          [attr.y1]="chartHeight - chartPadding"
-          [attr.x2]="chartWidth - chartPadding"
-          [attr.y2]="chartHeight - chartPadding"
-          class="axis-line"
-        ></line>
-
-        <line
-          [attr.x1]="chartPadding"
-          [attr.y1]="humidityOptimumY"
-          [attr.x2]="chartWidth - chartPadding"
-          [attr.y2]="humidityOptimumY"
-          class="grid-line optimum-line"
-        ></line>
-
-        <text [attr.x]="8" [attr.y]="chartPadding + 4" class="axis-label">
-          <!-- {{ humidityMax }} -->
-            {{ roomHumidityMax }}
-        </text>
-
-        <!-- <text [attr.x]="8" [attr.y]="chartHeight / 2 + 4" class="axis-label">
-           {{ humidityMiddleValue }}
-            {{ roomHumidityOptimum }}
-        </text> -->
-        <text [attr.x]="8" [attr.y]="humidityOptimumY + 4" class="axis-label">
-          {{ roomHumidityOptimum }}
-        </text>
-
-        <text [attr.x]="8" [attr.y]="chartHeight - chartPadding + 4" class="axis-label">
-          <!-- {{ humidityMin }} -->
-            {{ roomHumidityMin }}
-        </text>
-
-        <g *ngFor="let serie of humidityChartSeries">
-          <polyline
-            class="chart-line"
-            [attr.points]="getPolylinePoints(serie.points)"
-            [attr.stroke]="serie.color"
-          ></polyline>
-
-          <!-- <circle
-            *ngFor="let point of serie.points"
-            class="chart-point"
-            [attr.cx]="point.x"
-            [attr.cy]="point.y"
-            r="4"
-            [attr.fill]="serie.color"
-          >
-            <title>
-              {{ serie.sensorTitle }} | Nem: {{ point.value }} | {{ point.timeLabel }}
-            </title>
-          </circle> -->
-          <circle
-  *ngFor="let point of serie.points"
-  class="chart-point"
-  [attr.cx]="point.x"
-  [attr.cy]="point.y"
-  r="4"
-  [attr.fill]="serie.color"
-  (mouseenter)="showChartTooltip($event, serie.sensorTitle, 'Nem', point, '%')"
-  (mousemove)="moveChartTooltip($event)"
-  (mouseleave)="hideChartTooltip()"
->
-  <title>
-    {{ serie.sensorTitle }} | Nem: {{ point.value }} | {{ point.timeLabel }}
-  </title>
-</circle>
-        </g>
-      </svg>
-    </div>
-  </div>
 </div>
+
 
 
   <div *ngIf="!loading && analysisType === 'room-history' && roomHistoryData.length > 0" class="result-panel">
@@ -547,7 +353,7 @@
     <p>Ortalama Nem: {{ sensorAverageData.avg_nem }}</p>
   </div>
 
-  <div *ngIf="!loading && analysisType === 'sensor-last-n' && sensorLastNData.length > 0" class="result-panel">
+  <!-- <div *ngIf="!loading && analysisType === 'sensor-last-n' && sensorLastNData.length > 0" class="result-panel">
     <h2>Sensörün Son {{ limit }} Kaydı</h2>
     <table>
       <thead>
@@ -565,6 +371,206 @@
         </tr>
       </tbody>
     </table>
+  </div> -->
+
+  <div
+  *ngIf="!loading && analysisType === 'sensor-last-n' && sensorLastNData.length > 0"
+  class="result-panel"
+>
+  <h2>Sensörün Son {{ limit }} Kaydı</h2>
+
+
+  <div class="chart-section" *ngIf="temperatureChartSeries.length > 0">
+  <h3>Sıcaklık Geçmişi</h3>
+
+  <div class="chart-legend">
+    <span *ngFor="let serie of temperatureChartSeries" class="legend-item">
+      <span class="legend-color" [style.background]="serie.color"></span>
+      {{ serie.sensorTitle }}
+    </span>
+  </div>
+
+  <div class="svg-chart-wrapper">
+    <svg
+      class="svg-chart"
+      [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+      preserveAspectRatio="none"
+    >
+      <!-- Eksenler -->
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="chartPadding"
+        [attr.x2]="chartPadding"
+        [attr.y2]="chartHeight - chartPadding"
+        class="axis-line"
+      ></line>
+
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="chartHeight - chartPadding"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="chartHeight - chartPadding"
+        class="axis-line"
+      ></line>
+
+      <!-- Eşik çizgileri -->
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="temperatureMaxThresholdY"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="temperatureMaxThresholdY"
+        class="grid-line threshold-max-line"
+      ></line>
+
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="temperatureOptimumY"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="temperatureOptimumY"
+        class="grid-line optimum-line"
+      ></line>
+
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="temperatureMinThresholdY"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="temperatureMinThresholdY"
+        class="grid-line threshold-min-line"
+      ></line>
+
+      <text
+        *ngFor="let value of temperatureAxisValues"
+        [attr.x]="8"
+        [attr.y]="getYPosition(value, temperatureMin, temperatureMax) + 4"
+        [ngClass]="isTemperatureThresholdValue(value) ? 'axis-label threshold-axis-label' : 'axis-label'"
+      >
+        {{ value }}
+      </text>
+
+      <!-- Seri -->
+      <g *ngFor="let serie of temperatureChartSeries">
+        <polyline
+          class="chart-line"
+          [attr.points]="getPolylinePoints(serie.points)"
+          [attr.stroke]="serie.color"
+        ></polyline>
+
+        <circle
+          *ngFor="let point of serie.points"
+          class="chart-point"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+          r="4"
+          [attr.fill]="serie.color"
+          (mouseenter)="showChartTooltip($event, serie.sensorTitle, 'Sıcaklık', point, '°C')"
+          (mousemove)="moveChartTooltip($event)"
+          (mouseleave)="hideChartTooltip()"
+        >
+          <title>
+            {{ serie.sensorTitle }} | Sıcaklık: {{ point.value }} | {{ point.timeLabel }}
+          </title>
+        </circle>
+      </g>
+    </svg>
+  </div>
+</div>
+
+
+<div class="chart-section" *ngIf="humidityChartSeries.length > 0">
+  <h3>Nem Geçmişi</h3>
+
+  <div class="chart-legend">
+    <span *ngFor="let serie of humidityChartSeries" class="legend-item">
+      <span class="legend-color" [style.background]="serie.color"></span>
+      {{ serie.sensorTitle }}
+    </span>
+  </div>
+
+  <div class="svg-chart-wrapper">
+    <svg
+      class="svg-chart"
+      [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+      preserveAspectRatio="none"
+    >
+      <!-- Eksenler -->
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="chartPadding"
+        [attr.x2]="chartPadding"
+        [attr.y2]="chartHeight - chartPadding"
+        class="axis-line"
+      ></line>
+
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="chartHeight - chartPadding"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="chartHeight - chartPadding"
+        class="axis-line"
+      ></line>
+
+      <!-- Eşik çizgileri -->
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="humidityMaxThresholdY"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="humidityMaxThresholdY"
+        class="grid-line threshold-max-line"
+      ></line>
+
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="humidityOptimumY"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="humidityOptimumY"
+        class="grid-line optimum-line"
+      ></line>
+
+      <line
+        [attr.x1]="chartPadding"
+        [attr.y1]="humidityMinThresholdY"
+        [attr.x2]="chartWidth - chartPadding"
+        [attr.y2]="humidityMinThresholdY"
+        class="grid-line threshold-min-line"
+      ></line>
+
+      <!-- Sol eksen değerleri -->
+      <text
+        *ngFor="let value of humidityAxisValues"
+        [attr.x]="8"
+        [attr.y]="getYPosition(value, humidityMin, humidityMax) + 4"
+        [ngClass]="isHumidityThresholdValue(value) ? 'axis-label threshold-axis-label' : 'axis-label'"
+      >
+        {{ value }}
+      </text>
+
+      <!-- Seri -->
+      <g *ngFor="let serie of humidityChartSeries">
+        <polyline
+          class="chart-line"
+          [attr.points]="getPolylinePoints(serie.points)"
+          [attr.stroke]="serie.color"
+        ></polyline>
+
+        <circle
+          *ngFor="let point of serie.points"
+          class="chart-point"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+          r="4"
+          [attr.fill]="serie.color"
+          (mouseenter)="showChartTooltip($event, serie.sensorTitle, 'Nem', point, '%')"
+          (mousemove)="moveChartTooltip($event)"
+          (mouseleave)="hideChartTooltip()"
+        >
+          <title>
+            {{ serie.sensorTitle }} | Nem: {{ point.value }} | {{ point.timeLabel }}
+          </title>
+        </circle>
+      </g>
+    </svg>
+  </div>
+</div>
   </div>
 
   <div *ngIf="!loading && analysisType === 'sensor-range' && sensorRangeData.length > 0" class="result-panel">

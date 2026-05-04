@@ -45,11 +45,6 @@
   font-size: 14px;
 }
 
-// .form-actions {
-//   display: flex;
-//   align-items: end;
-// }
-
 .form-actions {
   display: flex;
   align-items: flex-end;
@@ -282,7 +277,7 @@ th {
 .svg-chart-wrapper {
   width: 100%;
   height: 340px;
-  overflow-x: auto;
+  overflow-x: hidden;
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   background: #ffffff;
@@ -291,8 +286,8 @@ th {
 
 .svg-chart {
   width: 100%;
-  min-width: 760px;
   height: 100%;
+  display: block;
 }
 
 .axis-line {
@@ -307,9 +302,38 @@ th {
 }
 
 .axis-label {
-  font-size: 13px;
-  fill: #64748b;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
+  fill: #475569;
+}
+
+.threshold-axis-label {
+  font-weight: 800;
+  fill: #0f172a;
+}
+
+.threshold-axis-label {
+  font-weight: 800;
+  fill: #111827;
+}
+
+.threshold-value-label {
+  font-size: 10px;
+  font-weight: 700;
+  fill: #334155;
+}
+
+.threshold-value-optimum {
+  fill: #166534;
+}
+
+.threshold-value-label.threshold-max,
+.threshold-value-label.threshold-min {
+  fill: #b91c1c;
+}
+
+.threshold-value-optimum {
+  fill: #166534;
 }
 
 .chart-line {
